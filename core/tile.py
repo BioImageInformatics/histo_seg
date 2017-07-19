@@ -116,17 +116,29 @@ def init_outputs(sample, n_classes):
 #/end init_outputs
 
 
+def downsample_foreground(foreground, nrow, ncol):
+    fg = cv2.resize(foreground, dsize=(nrow, ncol), interpolation=cv2.INTER_LINEAR)
+    fg = whitespace(fg)
+
+    return fg
+
+
+
+'''
+return a list of coordinates we can use to
+1) read from the svs file
+2) place results into the prob_maps
+'''
 # def get_coordinates(svs, foreground, svs_info, settings):
 def get_coordinates(svs, foreground, settings):
     scales = settings['scales']
     overlaps = settings['overlaps']
-    proc_size = settings['proc_size']
 
 
     coordinates = []
-    # we have constant size to draw from each level:
-    # annoyingly the coordinates openslide uses are w.r.t. level 0
+    mults = []  # keep track of how to convert everything w.r.t. level 0
     for scale, overlap in zip(scales, overlaps):
+        proc_size = settings['proc_size']
         if scale == '20x':
             dims = svs.level_dimensions[-3][::-1]
             mult = 1
@@ -139,7 +151,6 @@ def get_coordinates(svs, foreground, settings):
         #/end if
 
         nrow, ncol = dims[0]/int(proc_size/mult), dims[1]/int(proc_size/mult)
-
         print '{}: dims:{} nrow: {}, ncol: {}'.format(scale, dims, nrow, ncol)
         lst = [(x,y)
                 for x in range(1, ncol-1)
@@ -147,16 +158,20 @@ def get_coordinates(svs, foreground, settings):
 
         print 'Original list: ', len(lst)
 
-        fg = cv2.resize(fg, dsize=(nrow, ncol), interpolation=cv2.INTER_NEAREST)
-        # def is_foreground(x,y, fg=fg):
-        #     return fg[x,y]
-        #/end is_foreground
+        fg = cv2.resize(foreground, dsize=(nrow, ncol), interpolation=cv2.INTER_NEAREST)
+        proc_size -= 2*int(overlap / mult)
 
-        lst = [(int(x*proc_size*mult), int(y*proc_size*mult)) for (x, y) in lst if fg[x,y]]
+        print 'Overlap: ', overlap/mult
+        print 'Proc size to use: ', proc_size
 
+        lst = [(int(x*proc_size*mult)-overlap/mult, int(y*proc_size*mult)-overlap/mult)
+               for (x, y) in lst if fg[x,y]]
+
+        print 'filtered list: ', len(lst)
         coordinates.append(lst)
+        mults.append(mult)
     #/end for
-    return coordinates
+    return coordinates, mults
 #/end get_coordinates
 
 
@@ -166,7 +181,11 @@ def DEBUGGING_pull_tiles_from_coords(svs, coords, writeto, size=256, level=-1):
     print '{} coordinates'.format(len(coords))
     size_mult = int(np.sqrt(svs.level_downsamples[level]))
 
-    for i, (x, y) in enumerate(coords):
+    indices = range(len(coords))
+    indices = np.random.choice(indices, 100)
+
+    for i, index in enumerate(indices):
+        x, y = coords[index]
         img = data_utils.read_region(svs, x, y, 0, size=(size*size_mult, size*size_mult))
         # img = data_utils.read_region(
         #     svs, start=(x1,y1), level=level, dims=size)
@@ -189,11 +208,11 @@ def tile_svs(svs, settings):
     foreground = preprocessing(svs)
 
     # probability images are at 5x
-    probability_images = init_outputs(foreground, settings['n_classes'])
+    prob_maps = init_outputs(foreground, settings['n_classes'])
     print 'Scanning for foreground tiles'
     # coordinates, coordinates_low = get_coordinates(svs, foreground, svs_info, settings)
-    coordinates = get_coordinates(svs, foreground, settings)
+    coordinates, mults = get_coordinates(svs, foreground, settings)
     print 'Found {} foreground candidates'.format(len(coordinates[0]))
 
-    return coordinates, probability_images
+    return coordinates, prob_maps, mults
 #/end tile_svs

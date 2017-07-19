@@ -22,11 +22,11 @@ input:
     tile params
     blank output images
 output:
-    filled-in output probability images
+    filled-in output prob_maps 
 
 r():
 input:
-    probability images
+    prob_maps
     processing params
 output:
     smoothed output
@@ -59,13 +59,13 @@ def main(args):
     svs = data_utils.open_slide(args.slide)
 
     # start -- do tiling / preprocessing
-    coordinates, prob_images = tile.tile_svs(svs, settings)
+    coordinates, prob_maps = tile.tile_svs(svs, settings)
 
     # keep going
-    prob_images = process.process_svs(prob_images, coordinates, settings)
+    prob_maps = process.process_svs(prob_maps, coordinates, settings)
 
     # done?
-    outputs = reconstruct.reconstruct_svs(prob_images, settings)
+    outputs = reconstruct.reconstruct_svs(prob_maps, settings)
 
 
 if __name__ == '__main__':
