@@ -32,11 +32,14 @@ output:
     smoothed output
     proposal label image
 
+new things:
+    - to save space and make for cleaner code, pickle the settings and use those
 '''
 
 import argparse
 import cv2
 import sys
+import cPickle as pickle
 
 sys.path.insert(0, '.')
 import tile
@@ -44,13 +47,32 @@ import process
 import reconstruct
 import data_utils
 
-def parse_args(args):
-    pass
 
+def main(args):
+    # check arguments
+    assert os.path.exists(args.settings)
+    assert os.path.exists(args.slide)
+    with open(args.settings, 'r') as f:
+        settings = pickle.load(f)
+    #/end with
 
-def main(**kwargs):
-    pass
+    svs = data_utils.open_slide(args.slide)
+
+    # start -- do tiling / preprocessing
+    coordinates, prob_images = tile.tile_svs(svs, settings)
+
+    # keep going
+    prob_images = process.process_svs(prob_images, coordinates, settings)
+
+    # done?
+    outputs = reconstruct.reconstruct_svs(prob_images, settings)
 
 
 if __name__ == '__main__':
-    args = parse_args(sys.argv)
+    p = argparse.ArgumentParser()
+    p.add_argument('--slide')
+    p.add_argument('--settings')
+
+    args = p.parse_args()
+
+    main(args)
