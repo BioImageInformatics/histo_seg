@@ -19,8 +19,9 @@ settings = {
     'class_names': ['LowGrade', 'HighGrade', 'Benign', 'Stroma'],
     'proc_size': 256,
     'scales': ['10x', '5x'],
+    'scale_indices': [-2, -1],
     # 'scales': [512-128, 1024-128],
-    'overlaps': [64, 64],
+    'overlaps': [32, 32],
     'output_dir': '/home/nathan/histo-seg/pca-dev',
     'weights': ['/home/nathan/histo-seg/semantic-pca/weights/xval_set_0_512/batchnorm_segnet_basic_pca_20170712.SGD_iter_65000.caffemodel',
                 '/home/nathan/histo-seg/semantic-pca/weights/xval_set_0_1024/batchnorm_segnet_basic_pca_20170712.SGD_iter_65000.caffemodel'],
@@ -28,5 +29,5 @@ settings = {
     'title': 'dev'
 }
 
-with open('/home/nathan/histo-seg/v2/example/pca_settings.pkl', 'w') as f:
+with open('example/pca_settings.pkl', 'w') as f:
     pickle.dump(settings, f)

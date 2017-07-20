@@ -11,6 +11,8 @@ import sys
 sys.path.insert(0, '/home/nathan/histo-seg/v2/core')
 import data_utils
 
+from matplotlib import pyplot as plt
+
 '''
 We need something like this to deal with slides scanned at differing resolutions
 
@@ -20,38 +22,40 @@ The new way to think about it is the lowest dim will always be 5x.
 
 [(40x), 20x, 10x, 5x]
 '''
-def pull_svs_stats(svs, svs_info):
-    app_mag = svs.properties['aperio.AppMag']
-    level_dims = svs.level_dimensions
-
-    # Find 20X level:
-    if app_mag == '20':  # scanned @ 20X
-        svs_info['app_mag'] = '20'
-        svs_info['20x_lvl'] = 0
-        svs_info['20x_dim'] = level_dims[0][::-1]
-        svs_info['20x_downsample'] = svs.level_downsamples[0]
-    elif app_mag == '40':  # scanned @ 40X
-        svs_info['app_mag'] = '40'
-        svs_info['20x_lvl'] = 1
-        svs_info['20x_dim'] = level_dims[1][::-1]
-        svs_info['20x_downsample'] = svs.level_downsamples[1]
-    #/end if
-    svs_info['lvl0_dim'] = level_dims[0][::-1]
-    svs_info['low_downsample'] = svs.level_downsamples[-1]
-
-    return svs_info
-#/end pull_svs_stats
+# def pull_svs_stats(svs, svs_info):
+#     app_mag = svs.properties['aperio.AppMag']
+#     level_dims = svs.level_dimensions
+#
+#     # Find 20X level:
+#     if app_mag == '20':  # scanned @ 20X
+#         svs_info['app_mag'] = '20'
+#         svs_info['20x_lvl'] = 0
+#         svs_info['20x_dim'] = level_dims[0][::-1]
+#         svs_info['20x_downsample'] = svs.level_downsamples[0]
+#     elif app_mag == '40':  # scanned @ 40X
+#         svs_info['app_mag'] = '40'
+#         svs_info['20x_lvl'] = 1
+#         svs_info['20x_dim'] = level_dims[1][::-1]
+#         svs_info['20x_downsample'] = svs.level_downsamples[1]
+#     #/end if
+#     svs_info['lvl0_dim'] = level_dims[0][::-1]
+#     svs_info['low_downsample'] = svs.level_downsamples[-1]
+#
+#     return svs_info
+# #/end pull_svs_stats
 
 
 def whitespace(img, white_pt=210):
-    background = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
-    bcg_level, background = cv2.threshold(background, 0, 255,
+    if len(img.shape)==3:
+        img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    #/end if
+    bcg_level, img = cv2.threshold(img, 0, 255,
                                           cv2.THRESH_BINARY + cv2.THRESH_OTSU)
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (13, 13))
-    background = cv2.morphologyEx(background, cv2.MORPH_OPEN, kernel)
+    img = cv2.morphologyEx(img, cv2.MORPH_OPEN, kernel)
 
-    background.dtype = np.bool
-    return background
+    img.dtype = np.bool
+    return 1 - img
 #/end whitespace
 
 
@@ -72,7 +76,8 @@ def get_process_map(masks):
 
 
 def preprocessing(svs):
-    img = data_utils.read_region(svs, 0, 0, -1, svs.level_dimensions[-1])
+    img = data_utils.read_region(
+        svs, 0, 0, svs.level_count - 1, svs.level_dimensions[-1], verbose=True)
     # s = 'PREPROCESS Successfully read image from {}\n'.format(
     #     kwargs['filename'])
     # logger(kwargs['reportfile'], s)
@@ -107,18 +112,26 @@ def nrow_ncol(svs_info, tilesize, overlap):
 
 def init_outputs(sample, n_classes):
     h, w = sample.shape[:2]
-    outputs = []
+    prob_maps = []
     for k in range(n_classes):
-        outputs.append(np.zeros(shape=(h,w), dtype=np.float32))
+        prob_maps.append(np.zeros(shape=(h,w), dtype=np.float32))
     #/end for
 
-    return outputs
+    prob_maps = np.dstack(prob_maps)
+
+    return prob_maps
 #/end init_outputs
 
+'''
+this thing has to preserve the overall shape of the foreground area
+At this point foreground = 1 and background = 0
 
-def downsample_foreground(foreground, nrow, ncol):
-    fg = cv2.resize(foreground, dsize=(nrow, ncol), interpolation=cv2.INTER_LINEAR)
-    fg = whitespace(fg)
+important to keep that convention
+'''
+def downsample_foreground(foreground, x, y):
+    fg = cv2.resize(foreground, dsize=(x, y), interpolation=cv2.INTER_NEAREST)
+    # fg =
+    # fg = whitespace(fg)
 
     return fg
 
@@ -134,9 +147,16 @@ def get_coordinates(svs, foreground, settings):
     scales = settings['scales']
     overlaps = settings['overlaps']
 
+    svs_info = {}
+    svs_info = data_utils.pull_svs_stats(svs, svs_info)
+    lvl20_index = svs_info['20x_lvl']
+
+    ## Dims are (row, col) = (y, x)
+    lvl20_dims = svs_info['20x_dim']
 
     coordinates = []
     mults = []  # keep track of how to convert everything w.r.t. level 0
+    # Get the multiplier to transform `scale` to 20X scale
     for scale, overlap in zip(scales, overlaps):
         proc_size = settings['proc_size']
         if scale == '20x':
@@ -150,24 +170,29 @@ def get_coordinates(svs, foreground, settings):
             mult = 4
         #/end if
 
-        nrow, ncol = dims[0]/int(proc_size/mult), dims[1]/int(proc_size/mult)
-        print '{}: dims:{} nrow: {}, ncol: {}'.format(scale, dims, nrow, ncol)
-        lst = [(x,y)
-                for x in range(1, ncol-1)
-                for y in range(1, nrow-1)]
+        print 'scale {}'.format(scale)
+        print '\tDimensions: {}'.format(dims)
+        lvl20size = proc_size * mult
+        print '\tlvl20 Dimensions: {}'.format(lvl20_dims)
+        print '\tTilesize w/r/t lvl20X: {}'.format(lvl20size)
+        # tile_size = lvl20size - overlap
+        # print '\tLattice initialized for 20X tilesize: {}'.format(tile_size)
 
-        print 'Original list: ', len(lst)
+        ## Get the lattice grid w/r/t level 0 and correctly sized tiles
+        nrow, ncol = int(lvl20_dims[0]/lvl20size), int(lvl20_dims[1]/lvl20size)
+        lst = [ (row, col) for row in range(1, nrow-2) for col in range(1, ncol-2) ]
+        print '\tnrow: {} ncol: {}'.format(nrow, ncol)
 
-        fg = cv2.resize(foreground, dsize=(nrow, ncol), interpolation=cv2.INTER_NEAREST)
-        proc_size -= 2*int(overlap / mult)
+        fg = downsample_foreground(foreground, ncol, nrow)
+        print '\tFG downsampled to {}'.format(fg.shape)
 
-        print 'Overlap: ', overlap/mult
-        print 'Proc size to use: ', proc_size
+        ## Transform from grid space to coordinate space w/r/t level 0
+        lst = [ (int((row-1)*(lvl20size)), int((col-1)*(lvl20size)))
+                for (row,col) in lst if fg[row,col] ]
 
-        lst = [(int(x*proc_size*mult)-overlap/mult, int(y*proc_size*mult)-overlap/mult)
-               for (x, y) in lst if fg[x,y]]
+        print '\tTransformed to {} - {}'.format(lst[0], lst[-1])
+        print 'Returning {} coordinates'.format(len(lst))
 
-        print 'filtered list: ', len(lst)
         coordinates.append(lst)
         mults.append(mult)
     #/end for
@@ -178,7 +203,7 @@ def get_coordinates(svs, foreground, settings):
 def DEBUGGING_pull_tiles_from_coords(svs, coords, writeto, size=256, level=-1):
     assert os.path.exists(writeto), '{} does not exist'.format(writeto)
 
-    print '{} coordinates'.format(len(coords))
+    # print '{} coordinates'.format(len(coords))
     size_mult = int(np.sqrt(svs.level_downsamples[level]))
 
     indices = range(len(coords))
@@ -187,32 +212,22 @@ def DEBUGGING_pull_tiles_from_coords(svs, coords, writeto, size=256, level=-1):
     for i, index in enumerate(indices):
         x, y = coords[index]
         img = data_utils.read_region(svs, x, y, 0, size=(size*size_mult, size*size_mult))
-        # img = data_utils.read_region(
-        #     svs, start=(x1,y1), level=level, dims=size)
         img = cv2.resize(img, dsize=(size,size))
         img_name = os.path.join(writeto, '{}x{}x{}.jpg'.format(x,y,size))
         cv2.imwrite(filename=img_name, img=img)
-        print 'region {}, x:{}, y:{}, shape:{}'.format(
-            i, x, y, img.shape)
     #/end for
 #/end DEBUGGING_pull_tiles_from_coords
 
 
 def tile_svs(svs, settings):
-    # pull basic info from svs
-    # svs_info = {}
-    # svs_info = pull_svs_stats(svs, svs_info)
-
-    # find foreground area
-    # foreground is at 5x
     foreground = preprocessing(svs)
 
     # probability images are at 5x
     prob_maps = init_outputs(foreground, settings['n_classes'])
     print 'Scanning for foreground tiles'
     # coordinates, coordinates_low = get_coordinates(svs, foreground, svs_info, settings)
-    coordinates, mults = get_coordinates(svs, foreground, settings)
+    coordinates, _ = get_coordinates(svs, foreground, settings)
     print 'Found {} foreground candidates'.format(len(coordinates[0]))
 
-    return coordinates, prob_maps, mults
+    return coordinates, prob_maps, foreground
 #/end tile_svs
