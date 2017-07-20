@@ -22,28 +22,6 @@ The new way to think about it is the lowest dim will always be 5x.
 
 [(40x), 20x, 10x, 5x]
 '''
-# def pull_svs_stats(svs, svs_info):
-#     app_mag = svs.properties['aperio.AppMag']
-#     level_dims = svs.level_dimensions
-#
-#     # Find 20X level:
-#     if app_mag == '20':  # scanned @ 20X
-#         svs_info['app_mag'] = '20'
-#         svs_info['20x_lvl'] = 0
-#         svs_info['20x_dim'] = level_dims[0][::-1]
-#         svs_info['20x_downsample'] = svs.level_downsamples[0]
-#     elif app_mag == '40':  # scanned @ 40X
-#         svs_info['app_mag'] = '40'
-#         svs_info['20x_lvl'] = 1
-#         svs_info['20x_dim'] = level_dims[1][::-1]
-#         svs_info['20x_downsample'] = svs.level_downsamples[1]
-#     #/end if
-#     svs_info['lvl0_dim'] = level_dims[0][::-1]
-#     svs_info['low_downsample'] = svs.level_downsamples[-1]
-#
-#     return svs_info
-# #/end pull_svs_stats
-
 
 def whitespace(img, white_pt=210):
     if len(img.shape)==3:
@@ -54,8 +32,7 @@ def whitespace(img, white_pt=210):
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (13, 13))
     img = cv2.morphologyEx(img, cv2.MORPH_OPEN, kernel)
 
-    img.dtype = np.bool
-    return 1 - img
+    return img > 0
 #/end whitespace
 
 
@@ -75,20 +52,45 @@ def get_process_map(masks):
 #/end get_process_map
 
 
+'''
+https://www.learnopencv.com/filling-holes-in-an-image-using-opencv-python-c/
+'''
+def imfill(img):
+    if img.dtype == 'bool':
+        img = img.astype(np.uint8)
+    #/end if
+
+    img_fill = np.copy(img)
+    # Mask used to flood filling.
+    # Notice the size needs to be 2 pixels than the image.
+    h, w = img_fill.shape[:2]
+    mask = np.zeros((h+2, w+2), np.uint8)
+
+    # Floodfill from point (0, 0)
+    cv2.floodFill(img_fill, mask, (0,0), 255);
+
+    # Invert floodfilled image
+    im_floodfill_inv = cv2.bitwise_not(img_fill)
+
+    # Combine the two images to get the foreground.
+    im_out = img | im_floodfill_inv
+    im_out = im_out > 1
+    return im_out
+#/end imfill
+
+
 def preprocessing(svs):
-    img = data_utils.read_region(
-        svs, 0, 0, svs.level_count - 1, svs.level_dimensions[-1], verbose=True)
-    # s = 'PREPROCESS Successfully read image from {}\n'.format(
-    #     kwargs['filename'])
-    # logger(kwargs['reportfile'], s)
+    img = data_utils.read_low_level(svs)
 
     # Boolean image of white areas
     whitemap = whitespace(img)
+    whitemap = imfill(whitemap)
 
-    # masks = [whitemap]
-    # process_map = get_process_map(masks)
-    # process_map = process_map.astype(np.uint8)
-    process_map = whitemap.astype(np.uint8)
+    if whitemap.dtype == 'bool':
+        process_map = whitemap.astype(np.uint8)
+    elif whitemap.dtype == 'uint8':
+        process_map = whitemap
+    #/end if
 
     return process_map
 #/end preprocessing
@@ -170,28 +172,19 @@ def get_coordinates(svs, foreground, settings):
             mult = 4
         #/end if
 
-        print 'scale {}'.format(scale)
-        print '\tDimensions: {}'.format(dims)
         lvl20size = proc_size * mult
-        print '\tlvl20 Dimensions: {}'.format(lvl20_dims)
-        print '\tTilesize w/r/t lvl20X: {}'.format(lvl20size)
-        # tile_size = lvl20size - overlap
-        # print '\tLattice initialized for 20X tilesize: {}'.format(tile_size)
 
         ## Get the lattice grid w/r/t level 0 and correctly sized tiles
-        nrow, ncol = int(lvl20_dims[0]/lvl20size), int(lvl20_dims[1]/lvl20size)
+        nrow, ncol = int(lvl20_dims[0]/(lvl20size-overlap)), int(lvl20_dims[1]/(lvl20size-overlap))
         lst = [ (row, col) for row in range(1, nrow-2) for col in range(1, ncol-2) ]
-        print '\tnrow: {} ncol: {}'.format(nrow, ncol)
+                                            # print '\tnrow: {} ncol: {}'.format(nrow, ncol)
 
         fg = downsample_foreground(foreground, ncol, nrow)
-        print '\tFG downsampled to {}'.format(fg.shape)
+                                            # print '\tFG downsampled to {}'.format(fg.shape)
 
         ## Transform from grid space to coordinate space w/r/t level 0
-        lst = [ (int((row-1)*(lvl20size)), int((col-1)*(lvl20size)))
+        lst = [ (int((row-1)*(lvl20size-overlap)), int((col-1)*(lvl20size-overlap)))
                 for (row,col) in lst if fg[row,col] ]
-
-        print '\tTransformed to {} - {}'.format(lst[0], lst[-1])
-        print 'Returning {} coordinates'.format(len(lst))
 
         coordinates.append(lst)
         mults.append(mult)
@@ -200,27 +193,14 @@ def get_coordinates(svs, foreground, settings):
 #/end get_coordinates
 
 
-def DEBUGGING_pull_tiles_from_coords(svs, coords, writeto, size=256, level=-1):
-    assert os.path.exists(writeto), '{} does not exist'.format(writeto)
+'''
+take in an svs file and settings,
 
-    # print '{} coordinates'.format(len(coords))
-    size_mult = int(np.sqrt(svs.level_downsamples[level]))
-
-    indices = range(len(coords))
-    indices = np.random.choice(indices, 100)
-
-    for i, index in enumerate(indices):
-        x, y = coords[index]
-        img = data_utils.read_region(svs, x, y, 0, size=(size*size_mult, size*size_mult))
-        img = cv2.resize(img, dsize=(size,size))
-        img_name = os.path.join(writeto, '{}x{}x{}.jpg'.format(x,y,size))
-        cv2.imwrite(filename=img_name, img=img)
-    #/end for
-#/end DEBUGGING_pull_tiles_from_coords
-
-
+return a list of coordinates according to the tile size, and overlap
+'''
 def tile_svs(svs, settings):
     foreground = preprocessing(svs)
+    background = cv2.bitwise_not(foreground)
 
     # probability images are at 5x
     prob_maps = init_outputs(foreground, settings['n_classes'])
@@ -229,5 +209,5 @@ def tile_svs(svs, settings):
     coordinates, _ = get_coordinates(svs, foreground, settings)
     print 'Found {} foreground candidates'.format(len(coordinates[0]))
 
-    return coordinates, prob_maps, foreground
+    return coordinates, prob_maps, background
 #/end tile_svs
