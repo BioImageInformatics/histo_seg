@@ -43,7 +43,8 @@ import os
 import cPickle as pickle
 import time
 
-sys.path.insert(0, '/home/nathan/histo-seg/v2/core')
+module_dir, module_name = os.path.split(__file__)
+sys.path.insert(0, module_dir)
 import tile
 import process
 import reconstruct

@@ -15,6 +15,7 @@ import cPickle as pickle
 import numpy as np
 
 settings = {
+## Stuff for the dataset
     'title': 'dev',
     'n_classes': 4,
     'class_names': ['LowGrade', 'HighGrade', 'Benign', 'Stroma'],
@@ -26,11 +27,14 @@ settings = {
     'scale_indices': [-2, -1],
     # 'scales': [512-128, 1024-128],
     'overlaps': [16, 16],
+## Stuff for the loading and saving
     'output_dir': '/home/nathan/histo-seg/semantic-pca/analysis_wsi',
     'ramdisk': '/dev/shm',
+## Caffe prototxt and weight files
     'weights': ['/home/nathan/histo-seg/semantic-pca/weights/xval_set_0_512/batchnorm_segnet_basic_pca_20170712.SGD_iter_65000.caffemodel',
                 '/home/nathan/histo-seg/semantic-pca/weights/xval_set_0_1024/batchnorm_segnet_basic_pca_20170712.SGD_iter_65000.caffemodel'],
     'deploy_proto': '/home/nathan/histo-seg/semantic-pca/code/segnet_basic_deploy.prototxt',
+## Options
     'gpumode': True,
     'cnnlayer': 'prob',
     'do_normalize': True,
