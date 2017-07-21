@@ -101,5 +101,5 @@ if __name__ == '__main__':
 
     args = p.parse_args()
 
-    # main(args)
-    test(args)
+    main(args)
+    # test(args)
