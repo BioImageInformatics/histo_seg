@@ -8,7 +8,8 @@ import time
 import numpy as np
 
 import sys
-sys.path.insert(0, '/home/nathan/histo-seg/v2/core')
+module_dir, module_name = os.path.split(__file__)
+sys.path.insert(0, module_dir)
 import data_utils
 
 from matplotlib import pyplot as plt

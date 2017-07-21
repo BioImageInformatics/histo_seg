@@ -6,12 +6,19 @@ import cv2
 import numpy as np
 import sys
 import time
+import os
 
-sys.path.insert(0, '.')
+module_dir, module_name = os.path.split(__file__)
+sys.path.insert(0, module_dir)
 import data_utils
+import colorNormalization as cnorm
 
-sys.path.insert(0, '/home/nathan/caffe-segnet-crf/python')
-import caffe
+caffe_root = '/home/nathan/caffe-segnet-crf/python'
+sys.path.insert(0, caffe_root)
+try:
+    import caffe
+except:
+    print 'WARNING: Failed to load Caffe from {}'.format(caffe_root)
 
 
 def init_net(netproto, weights, gpumode=True):
@@ -138,8 +145,13 @@ def process_svs(svs, prob_maps, coordinates, settings):
             ## tile preloading
             preload_start = time.time()
             tiles = data_utils.preload_tiles(svs, coord_prefetch,
-                size=(load_size, load_size), level=lvl20_index, normalize=do_normalize)
+                size=(load_size, load_size), level=lvl20_index, normalize=False)
             tiles = [cv2.resize(tile, dsize=(proc_size, proc_size)) for tile in tiles]
+
+            if do_normalize:
+                tiles = [cnorm.normalize(tile) for tile in tiles]
+            #/end if
+
             print '{} Tiles prepared in {:3.3f}s'.format(len(tiles), time.time() - preload_start),
 
             ## Processing here

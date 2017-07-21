@@ -12,7 +12,9 @@ import time
 import sys
 import os
 import shutil
-sys.path.insert(0, '/home/nathan/histo-seg/v2/core')
+
+module_dir, module_name = os.path.split(__file__)
+sys.path.insert(0, module_dir)
 import colorNormalization as cnorm
 
 def open_slide(slide):
@@ -38,7 +40,7 @@ def pull_svs_stats(svs, svs_info):
         svs_info['20x_downsample'] = svs.level_downsamples[1]
         svs_info['mult_5x'] = 1/64.
     #/end if
-    svs_info['20x_to_5x'] = 1/16
+    svs_info['20x_to_5x'] = 1/16.
     svs_info['lvl0_dim'] = level_dims[0]
     svs_info['low_downsample'] = svs.level_downsamples[-1]
 
