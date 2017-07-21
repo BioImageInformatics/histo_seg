@@ -92,7 +92,7 @@ aS'/home/nathan/histo-seg/semantic-pca/weights/xval_set_0_1024/batchnorm_segnet_
 p37
 asS'output_dir'
 p38
-S'/dev/shm/db'
+S'/home/nathan/histo-seg/semantic-pca/analysis_wsi'
 p39
 sS'n_classes'
 p40

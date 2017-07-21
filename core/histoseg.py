@@ -43,17 +43,20 @@ import os
 import cPickle as pickle
 import time
 
-sys.path.insert(0, '.')
+sys.path.insert(0, '/home/nathan/histo-seg/v2/core')
 import tile
 import process
 import reconstruct
 import data_utils
 
 
+def test(args):
+    print 'Got slide: ', args.slide
+    print 'Got settings: ', args.settings
+#/end test
+
 def main(args):
     # check arguments
-    #/end if
-
     assert args.slide and args.settings
     assert os.path.exists(args.settings)
     assert os.path.exists(args.slide)
@@ -98,4 +101,5 @@ if __name__ == '__main__':
 
     args = p.parse_args()
 
-    main(args)
+    # main(args)
+    test(args)

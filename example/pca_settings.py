@@ -26,7 +26,7 @@ settings = {
     'scale_indices': [-2, -1],
     # 'scales': [512-128, 1024-128],
     'overlaps': [16, 16],
-    'output_dir': '/dev/shm/db',
+    'output_dir': '/home/nathan/histo-seg/semantic-pca/analysis_wsi',
     'ramdisk': '/dev/shm',
     'weights': ['/home/nathan/histo-seg/semantic-pca/weights/xval_set_0_512/batchnorm_segnet_basic_pca_20170712.SGD_iter_65000.caffemodel',
                 '/home/nathan/histo-seg/semantic-pca/weights/xval_set_0_1024/batchnorm_segnet_basic_pca_20170712.SGD_iter_65000.caffemodel'],
