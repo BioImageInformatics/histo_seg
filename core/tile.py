@@ -200,7 +200,8 @@ return a list of coordinates according to the tile size, and overlap
 '''
 def tile_svs(svs, settings):
     foreground = preprocessing(svs)
-    background = cv2.bitwise_not(foreground)
+    # background = cv2.bitwise_not(foreground)
+    background = 1 - foreground
 
     # probability images are at 5x
     prob_maps = init_outputs(foreground, settings['n_classes'])

@@ -11,6 +11,7 @@ import numpy as np
 import time
 import sys
 import os
+import shutil
 sys.path.insert(0, '/home/nathan/histo-seg/v2/core')
 import colorNormalization as cnorm
 
@@ -37,6 +38,7 @@ def pull_svs_stats(svs, svs_info):
         svs_info['20x_downsample'] = svs.level_downsamples[1]
         svs_info['mult_5x'] = 1/64.
     #/end if
+    svs_info['20x_to_5x'] = 1/16
     svs_info['lvl0_dim'] = level_dims[0]
     svs_info['low_downsample'] = svs.level_downsamples[-1]
 
@@ -63,7 +65,6 @@ def read_region(svs, x, y, level, size, verbose=False):
 Load up a bunch of tiles as an ndarray ??
 '''
 def preload_tiles(svs, coords, level, size, as_ndarray=False, normalize=True):
-    time_start = time.time()
     tiles = [read_region(svs, x, y, level, size= size)
              for (y,x) in coords]
 
@@ -71,7 +72,6 @@ def preload_tiles(svs, coords, level, size, as_ndarray=False, normalize=True):
         tiles = [cnorm.normalize(tile) for tile in tiles]
     # tiles = [cv2.resize(tile, dsize=(size,size)) for tile in tiles]
 
-    print 'Loaded {} tiles in {:3.3f}s'.format(len(tiles), time.time() - time_start)
     if as_ndarray:
         tiles = [np.expand_dims(tile, axis=0) for tile in tiles]
         tiles = np.concatenate(tiles, axis=0)
@@ -81,14 +81,36 @@ def preload_tiles(svs, coords, level, size, as_ndarray=False, normalize=True):
 #/end preload_tiles
 
 
-
-
+''' Just a helper '''
 def read_low_level(svs, verbose=False):
     return read_region(svs, 0, 0, svs.level_count - 1,
         svs.level_dimensions[-1], verbose=verbose)
 #/end read_low_level
 
 
+''' copy file to ramdisk '''
+def transfer_to_ramdisk(filename, destination):
+    newname = os.path.basename(filename)
+    newname = os.path.join(destination, newname)
+
+    try:
+        shutil.copyfile(filename, newname)
+        print 'Copied {} to {}'.format(filename, newname)
+    except:
+        print 'Failed to transfer {} to {}'.format(filename, newname)
+        return 0
+
+    return newname
+#/end transfer_to_ramdisk
+
+
+def delete_from_ramdisk(filename):
+    try:
+        os.remove(filename)
+    except:
+        return 0
+    #/end try
+#/end transfer_to_ramdisk
 
 '''
 Return the basename
@@ -113,11 +135,14 @@ def save_result(imgs, svsbase, settings):
     for img, filename in zip(imgs, output_filenames):
         if filename == 'argmax':
             ext = '.png'
-            mult = 255/n_classes
-            # mult = 1
+            mult = 1
+            # for index in np.unique(img):
+            #     filename_ = os.path.join(output_dir, svsbase+'_{}_'.format(index)+filename+ext)
+            #     cv2.imwrite(filename_, (img == index).astype(np.uint8)*255)
+
         elif filename == 'probability':
             ext = '.jpg'
-            mult = 255
+            mult = 255/img.max()
         else:
             ext = '.jpg'
             mult = 1

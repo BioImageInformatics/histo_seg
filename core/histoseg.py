@@ -63,9 +63,12 @@ def main(args):
     if args.output_dir:
         settings['output_dir'] = args.output_dir
     #/end if
+    ramdisk = settings['ramdisk']
 
     svsbase = data_utils.svs_name(args.slide)
-    svs = data_utils.open_slide(args.slide)
+    svs_ramdisk = data_utils.transfer_to_ramdisk(args.slide, ramdisk)
+
+    svs = data_utils.open_slide(svs_ramdisk)
 
     # start -- do tiling / preprocessing
     coordinates, prob_maps, background = tile.tile_svs(svs, settings)
@@ -74,7 +77,7 @@ def main(args):
     process_start = time.time()
     prob_maps = process.process_svs(svs, prob_maps, coordinates, settings)
     print
-    print 'Processing done in {:3.3f}s'.format(time.time() - process_start)
+    print 'Processing {} done in {:3.3f}s'.format(svsbase, time.time() - process_start)
     print
 
     # done?
@@ -83,7 +86,8 @@ def main(args):
     data_utils.save_result([prob_combo, prediction, overlay],
         svsbase, settings)
 
-    # print 'Code home in', os.path.realpath(__file__)
+    data_utils.delete_from_ramdisk(svs_ramdisk)
+#/end main
 
 
 if __name__ == '__main__':

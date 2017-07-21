@@ -78,12 +78,11 @@ def process_svs(svs, prob_maps, coordinates, settings):
     n_classes = settings['n_classes']
     prefetch = settings['prefetch']
     do_normalize = settings['do_normalize']
-    do_normalize = False
 
     svs_info = {}
     svs_info = data_utils.pull_svs_stats(svs, svs_info)
     lvl20_index = svs_info['20x_lvl']
-    mult_5x = svs_info['mult_5x']
+    mult_5x = svs_info['20x_to_5x']
 
 
     ## Loop over scales
@@ -94,6 +93,7 @@ def process_svs(svs, prob_maps, coordinates, settings):
         net = init_net(netproto, weight, gpumode=gpumode)
 
         print 'Processing {}'.format(scale)
+        print 'Using {} tile coordinates'.format(len(coords))
 
         if scale == '20x':
             dims = svs.level_dimensions[-3][::-1]
@@ -110,7 +110,7 @@ def process_svs(svs, prob_maps, coordinates, settings):
         #/end if
 
         ## A subset for speed
-        # indices = np.random.choice(range(len(coords)), 500)
+        # indices = np.random.choice(range(len(coords)), 100)
         # coords = [coords[index] for index in indices]
         # print 'Subsetted {} coordinates '.format(len(coords))
 
@@ -122,6 +122,9 @@ def process_svs(svs, prob_maps, coordinates, settings):
 
         ## Divide the set into n chunks
         if len(coords) < prefetch:
+            print 'Coordinates ({}) < prefetch ({})'.format(
+                len(coords), prefetch
+            )
             coord_split = [coords]
             n_splits = 1
         else:
@@ -133,16 +136,20 @@ def process_svs(svs, prob_maps, coordinates, settings):
 
         for nindx, coord_prefetch in enumerate(coord_split):
             ## tile preloading
+            preload_start = time.time()
             tiles = data_utils.preload_tiles(svs, coord_prefetch,
                 size=(load_size, load_size), level=lvl20_index, normalize=do_normalize)
             tiles = [cv2.resize(tile, dsize=(proc_size, proc_size)) for tile in tiles]
+            print '{} Tiles prepared in {:3.3f}s'.format(len(tiles), time.time() - preload_start),
 
             ## Processing here
             # tiles = [cv2.cvtColor(tile, cv2.COLOR_RGB2GRAY) for tile in tiles]
             cnn_start = time.time()
             tiles = [run_net(net, tile, layer=cnnlayer) for tile in tiles]
+            print 'CNN finished in {:3.3f}s'.format(time.time() - cnn_start),
 
             # Resize to fit
+            placing_start = time.time()
             tiles = [cv2.resize(tile, dsize=(place_size, place_size)) for tile in tiles]
             coord_prefetch = [(int(x * mult_5x), int(y * mult_5x)) for (x,y) in coord_prefetch]
 
@@ -153,13 +160,14 @@ def process_svs(svs, prob_maps, coordinates, settings):
                 except:
                     failed_count += 1
                 #/end try
-            #/end for
-        #/end for
+            #/end for tile, (row,col)
+            print 'Placing done in {:3.3f}s'.format(time.time() - placing_start)
+        #/end for nindx, coord_prefetch
 
         print 'Failed: {}'.format(failed_count)
 
         pmap_out.append(pmap_scale)
-    #/end for
+    #/end for coords, scale, overlap, weight
 
     return pmap_out
 #/end process_svs

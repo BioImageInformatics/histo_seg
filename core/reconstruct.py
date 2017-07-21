@@ -35,7 +35,7 @@ arg2: h&e image in rgb space
 
 return false colored rgb
 '''
-def impose_overlay(label, rgb, colors):
+def impose_overlay(label, target, colors):
     r = np.zeros_like(label)
     g = np.zeros_like(label)
     b = np.zeros_like(label)
@@ -43,14 +43,15 @@ def impose_overlay(label, rgb, colors):
     assert len(np.unique(label)) <= colors.shape[0]
 
     for index in np.unique(label):
+        print 'Replacing label {} with {}'.format(index, colors[index, :])
         r[label==index] = colors[index, 0]
         g[label==index] = colors[index, 1]
         b[label==index] = colors[index, 2]
     #/end for
 
     # replace label with color coded label
-    label = np.dstack([b,g,r])
-    output = rgb * 0.6 + label * 0.4
+    label = np.dstack([r,g,b])
+    output = target * 0.6 + label * 0.4
 
     # return output[:,:,::-1], label
     return output, label
@@ -95,6 +96,8 @@ def reconstruct(prob_maps, svs, background, settings):
     # prob_map = np.mean(prob_maps, axis=0)
 
     # Argmax
+    if background.dtype is not 'bool':
+        background = background.astype(np.bool)
     prob_max = np.argmax(prob_map, axis=2)
     prob_max[background] = replace_value
 
