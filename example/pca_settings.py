@@ -31,9 +31,9 @@ settings = {
     'output_dir': '/home/nathan/histo-seg/semantic-pca/analysis_wsi',
     'ramdisk': '/dev/shm',
 ## Caffe prototxt and weight files
-    'weights': ['/home/nathan/histo-seg/semantic-pca/weights/xval_set_0_512/batchnorm_segnet_basic_pca_20170712.SGD_iter_65000.caffemodel',
-                '/home/nathan/histo-seg/semantic-pca/weights/xval_set_0_1024/batchnorm_segnet_basic_pca_20170712.SGD_iter_65000.caffemodel'],
-    'deploy_proto': '/home/nathan/histo-seg/semantic-pca/code/segnet_basic_deploy.prototxt',
+    'weights': ['/home/nathan/histo-seg/semantic-pca/weights/xval_set_0_512/batchnorm_segnet_basic_crf_pca_20170712.SGD_iter_25000.caffemodel',
+                '/home/nathan/histo-seg/semantic-pca/weights/xval_set_0_1024/batchnorm_segnet_basic_crf_pca_20170712.SGD_iter_25000.caffemodel'],
+    'deploy_proto': '/home/nathan/histo-seg/semantic-pca/code/segnet_basic_crfrnn_deploy.prototxt',
 ## Options
     'gpumode': True,
     'cnnlayer': 'prob',

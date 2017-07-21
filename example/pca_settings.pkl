@@ -11,7 +11,7 @@ I-2
 aI-1
 asS'deploy_proto'
 p6
-S'/home/nathan/histo-seg/semantic-pca/code/segnet_basic_deploy.prototxt'
+S'/home/nathan/histo-seg/semantic-pca/code/segnet_basic_crfrnn_deploy.prototxt'
 p7
 sS'gpumode'
 p8
@@ -86,9 +86,9 @@ I3
 sS'weights'
 p34
 (lp35
-S'/home/nathan/histo-seg/semantic-pca/weights/xval_set_0_512/batchnorm_segnet_basic_pca_20170712.SGD_iter_65000.caffemodel'
+S'/home/nathan/histo-seg/semantic-pca/weights/xval_set_0_512/batchnorm_segnet_basic_crf_pca_20170712.SGD_iter_25000.caffemodel'
 p36
-aS'/home/nathan/histo-seg/semantic-pca/weights/xval_set_0_1024/batchnorm_segnet_basic_pca_20170712.SGD_iter_65000.caffemodel'
+aS'/home/nathan/histo-seg/semantic-pca/weights/xval_set_0_1024/batchnorm_segnet_basic_crf_pca_20170712.SGD_iter_25000.caffemodel'
 p37
 asS'output_dir'
 p38

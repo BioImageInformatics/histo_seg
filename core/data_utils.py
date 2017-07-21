@@ -85,8 +85,14 @@ def preload_tiles(svs, coords, level, size, as_ndarray=False, normalize=True):
 
 ''' Just a helper '''
 def read_low_level(svs, verbose=False):
-    return read_region(svs, 0, 0, svs.level_count - 1,
-        svs.level_dimensions[-1], verbose=verbose)
+    if svs.level_count == 4 and svs.properties['aperio.AppMag'] == '20':
+        low_index = svs.level_count - 2
+    else:
+        low_index = svs.level_count - 1
+    #/end if
+
+    return read_region(svs, 0, 0, low_index,
+        svs.level_dimensions[low_index], verbose=verbose)
 #/end read_low_level
 
 
