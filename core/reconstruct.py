@@ -103,6 +103,6 @@ def reconstruct(prob_maps, svs, background, settings):
 
     # Overlay an H&E
     overlay = data_utils.read_low_level(svs)
-    overlay, prob_max = impose_overlay(prob_max, overlay, colors)
+    overlay, prob_max_color = impose_overlay(prob_max, overlay, colors)
 
-    return prob_map, prob_max, overlay
+    return prob_map, prob_max, prob_max_color, overlay

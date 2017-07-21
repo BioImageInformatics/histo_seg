@@ -85,9 +85,9 @@ def main(args):
     print
 
     # done?
-    prob_combo, prediction, overlay = reconstruct.reconstruct(prob_maps,
+    prob_combo, prediction, prediction_rgb, overlay = reconstruct.reconstruct(prob_maps,
         svs, background, settings)
-    data_utils.save_result([prob_combo, prediction, overlay],
+    data_utils.save_result([prob_combo, prediction, prediction_rgb, overlay],
         svsbase, settings)
 
     data_utils.delete_from_ramdisk(svs_ramdisk)

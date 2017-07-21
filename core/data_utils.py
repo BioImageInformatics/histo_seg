@@ -141,7 +141,7 @@ def save_result(imgs, svsbase, settings):
     assert len(imgs) == len(output_filenames)
 
     for img, filename in zip(imgs, output_filenames):
-        if filename == 'argmax':
+        if 'argmax' in filename:
             ext = '.png'
             mult = 1
             # for index in np.unique(img):
