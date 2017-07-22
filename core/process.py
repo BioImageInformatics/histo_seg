@@ -119,6 +119,8 @@ def run_net(net, img, rotate=False, layer='conv_classifier'):
             activ_ = [np.squeeze(act) for act in activ_] ## make 2D
             activ_ = [np.expand_dims(act,2) for act in activ_] ## make 3D (h,w,1)
             activ = np.dstack(activ_) ## stack 3D (h,w,nd)
+
+            activ = np.rot90(activ, 4-rot)
             activations.append( activ )
             # activ += np.rot90(np.squeeze(net.blobs[layer].data), 4-rot, axes=(1,2))
             # activ.append(
@@ -184,9 +186,9 @@ def process_svs(svs, prob_maps, coordinates, settings):
         #/end if
 
         ## A subset for speed
-        indices = np.random.choice(range(len(coords)), 250)
-        coords = [coords[index] for index in indices]
-        print 'Subsetted {} coordinates '.format(len(coords))
+        #indices = np.random.choice(range(len(coords)), 50)
+        #coords = [coords[index] for index in indices]
+        #print 'Subsetted {} coordinates '.format(len(coords))
 
         failed_count = 0
         load_size = proc_size = settings['proc_size']
@@ -219,7 +221,7 @@ def process_svs(svs, prob_maps, coordinates, settings):
                 tiles = [cnorm.normalize(tile) for tile in tiles]
             #/end if
 
-            print '{} Tiles prepared in {:3.3f}s'.format(len(tiles), time.time() - preload_start),
+            print '{} Tiles preloaded in {:3.3f}s'.format(len(tiles), time.time() - preload_start),
 
             ## Processing here
             # tiles = [cv2.cvtColor(tile, cv2.COLOR_RGB2GRAY) for tile in tiles]
