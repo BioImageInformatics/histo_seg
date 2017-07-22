@@ -59,84 +59,39 @@ What we need is the output to be: (h, w, n_class)
 '''
 def imgs_to_caffe_batch(imgs):
     pass
+#/end imgs_to_caffe_batch
+
+''' This function instead of np.rollaxis or similar '''
+def activations_to_hwd(ndarr):
+    nd = ndarr.shape[0]
+    ndarr = np.split(ndarr, nd, 0) ## split along axis 0
+    ndarr = [np.squeeze(n) for n in ndarr] ## make 2D
+    ndarr = [np.expand_dims(n,2) for n in ndarr] ## make 3D (h,w,1)
+    return np.dstack(ndarr) ## stack 3D (h,w,nd)
+#/end activations_to_hwd
+
 
 def run_net(net, img, rotate=False, layer='conv_classifier'):
-    # imagetiletmp_r1 = np.rot90(img, 1)
-    # imagetiletmp_r2 = np.rot90(img, 2)
-    # imagetiletmp_r3 = np.rot90(img, 3)
-    #
-    # # img = np.expand_dims(np.moveaxis(img, -1, 0), 0)
-    # # imagetiletmp_r1 = np.expand_dims(np.rollaxis(imagetiletmp_r1, -1, 0), 0)
-    # # imagetiletmp_r2 = np.expand_dims(np.rollaxis(imagetiletmp_r2, -1, 0), 0)
-    # # imagetiletmp_r3 = np.expand_dims(np.rollaxis(imagetiletmp_r3, -1, 0), 0)
-    #
-    # img = np.moveaxis(img, -1, 0)
-    # imagetiletmp_r1 = np.rollaxis(imagetiletmp_r1, -1, 0)
-    # imagetiletmp_r2 = np.rollaxis(imagetiletmp_r2, -1, 0)
-    # imagetiletmp_r3 = np.rollaxis(imagetiletmp_r3, -1, 0)
-    #
-    # # net.blobs['data'].data[0, ...] = img
-    # # net.blobs['data'].data[1, ...] = imagetiletmp_r1
-    # # net.blobs['data'].data[2, ...] = imagetiletmp_r2
-    # # net.blobs['data'].data[3, ...] = imagetiletmp_r3
-    #
-    # net.blobs['data'].data[0, ...] = img
-    # out = net.forward()
-    # proball1 = np.moveaxis(np.squeeze(out[layer][0,...]), 0, -1)
-    # net.blobs['data'].data[0, ...] = imagetiletmp_r1
-    # out = net.forward()
-    # proball2 = np.rot90(np.moveaxis(np.squeeze(out[layer][0,...]), 0, -1), 3)
-    # net.blobs['data'].data[0, ...] = imagetiletmp_r2
-    # out = net.forward()
-    # proball3 = np.rot90(np.moveaxis(np.squeeze(out[layer][0,...]), 0, -1), 2)
-    # net.blobs['data'].data[0, ...] = imagetiletmp_r3
-    # out = net.forward()
-    # proball4 = np.rot90(np.moveaxis(np.squeeze(out[layer][0,...]), 0, -1), 1)
-    #
-    # # proball = np.squeeze(np.argmax(out['score'],1))
-    #
-    # return proball1 + proball2 + proball3 + proball4
-
     activations = []
     if rotate:
         _ = net.forward(data=img_to_caffe(img))
         activ = np.squeeze(net.blobs[layer].data)
-        nd = activ.shape[0]
-        activ_ = np.split(activ, nd, 0)
-        activ_ = [np.squeeze(act) for act in activ_]
-        activ_ = [np.expand_dims(act,2) for act in activ_]
-        activ = np.dstack(activ_)
-        activations.append( activ )
+        activations.append(activations_to_hwd(activ))
 
         for rot in range(1,4):
             img_ = np.rot90(img, rot)
             _ = net.forward(data=img_to_caffe(img_))
             activ = np.squeeze(net.blobs[layer].data)
-            # np.rot90(np.moveaxis(np.squeeze(out['softmax'][1, ...]), 0, -1), 3)
-            ## Not sure about this one
-            nd = activ.shape[0]
-            activ_ = np.split(activ, nd, 0)
-            activ_ = [np.squeeze(act) for act in activ_] ## make 2D
-            activ_ = [np.expand_dims(act,2) for act in activ_] ## make 3D (h,w,1)
-            activ = np.dstack(activ_) ## stack 3D (h,w,nd)
+            activ = activations_to_hwd(activ)
+            activ = np.rot90(activ, 4-rot)
             activations.append( activ )
-            # activ += np.rot90(np.squeeze(net.blobs[layer].data), 4-rot, axes=(1,2))
-            # activ.append(
-            #     np.rot90(np.squeeze(net.blobs[layer].data), 0, -1), 4-rot)
         #/end for
-
-        # activ = np.sum(activ, axis=0)
-        # activ = activ[0]
+        return np.prod(activations, axis=0)
     else:
         _ = net.forward(data=img_to_caffe(img))
-        activ = np.moveaxis(np.squeeze(net.blobs[layer].data), 0, -1)
+        activ = np.squeeze(net.blobs[layer].data)
+        return activations_to_hwd(activ)
     #/end if
-
-
-    # print activ.shape
-    activations = np.sum(activations, axis=0)
-    return activations
-
 #/end run_net
 
 
