@@ -18,8 +18,8 @@ apply some openings to each n
 '''
 def post_process(prob):
     n = prob.shape[2]
-    kernel_cross = cv2.getStructuringElement(cv2.MORPH_CROSS,(9,9))
-    kernel_circle = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(7,7))
+    kernel_cross = cv2.getStructuringElement(cv2.MORPH_CROSS,(3,3))
+    kernel_circle = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(5,5))
 
     layers = np.split(prob, n, 2)
     layers = [ cv2.morphologyEx(layer, cv2.MORPH_OPEN, kernel_cross) for layer in layers ]
@@ -86,10 +86,13 @@ def reconstruct(prob_maps, svs, background, settings):
     scale_weights = settings['scale_weights']
     colors = settings['colors']
     replace_value = settings['replace_value']
+    do_post_processing = settings['do_post_processing']
 
     print 'Reconstructing from {} scales'.format(len(scales))
-    print 'Applying openings'
-    prob_maps = [post_process(prob) for prob in prob_maps]
+
+    if do_post_processing:
+        print 'Applying openings'
+        prob_maps = [post_process(prob) for prob in prob_maps]
 
     # Take a weighted average
     prob_map = np.average(prob_maps, weights=scale_weights, axis=0)
