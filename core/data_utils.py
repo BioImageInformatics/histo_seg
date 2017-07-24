@@ -54,7 +54,12 @@ def read_region(svs, x, y, level, size, verbose=False):
             x,y,level,size)
     #/end if
 
-    ## Check if region is out of range for the requested level
+    ## TODO Check if region is out of range for the requested level
+    # level_dims = svs.level_dimensions[level]
+    # assert x > 0 and y > 0, print 'data_utils.read_region: X and Y must be positive'
+    # ## Not sure of the order
+    # assert x + size[0] < level_dims[1]
+    # assert y + size[1] < level_dims[0]
 
     img = svs.read_region((x,y), level, size)
     img = np.array(img)
@@ -63,15 +68,17 @@ def read_region(svs, x, y, level, size, verbose=False):
     return img
 #/end read_region
 
-'''
-Load up a bunch of tiles as an ndarray ??
-'''
+
+''' Load up a bunch of tiles as an ndarray '''
 def preload_tiles(svs, coords, level, size, as_ndarray=False, normalize=True):
     tiles = [read_region(svs, x, y, level, size= size)
              for (y,x) in coords]
 
+    # For completeness. Moved normalize outside & after resize
     if normalize:
         tiles = [cnorm.normalize(tile) for tile in tiles]
+    #/end if
+
     # tiles = [cv2.resize(tile, dsize=(size,size)) for tile in tiles]
 
     if as_ndarray:
@@ -107,11 +114,12 @@ def transfer_to_ramdisk(filename, destination):
     except:
         print 'Failed to transfer {} to {}'.format(filename, newname)
         return 0
+    #/end try
 
     return newname
 #/end transfer_to_ramdisk
 
-
+''' delete a file '''
 def delete_from_ramdisk(filename):
     try:
         os.remove(filename)
