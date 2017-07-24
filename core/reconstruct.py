@@ -95,7 +95,8 @@ def reconstruct(prob_maps, svs, background, settings):
         prob_maps = [post_process(prob) for prob in prob_maps]
 
     # Take a weighted average
-    prob_map = np.average(prob_maps, weights=scale_weights, axis=0)
+    # prob_map = np.average(prob_maps, weights=scale_weights, axis=0)
+    prob_map = np.prod(prob_maps, axis=0)
     # prob_map = np.mean(prob_maps, axis=0)
 
     # Argmax

@@ -37,11 +37,18 @@ settings = {
     'rotate':           True,
     'do_post_processing': False,
     'gpumode':          True,
-    'cnnlayer': 'prob',
+    'cnnlayer':         'prob',
     'do_normalize':     True,
     'output_filenames': ['probability', 'argmaxRGB', 'argmax', 'overlay'],
     'prefetch':         1000,
 }
+
+# Assertions to check settings validity
+assert len(settings['scales']) == len(settings['weights'])
+assert len(settings['scales']) == len(settings['overlaps'])
+assert n_classes == len(settings['class_names'])
+assert n_classes == settings['colors'].shape[0]
+
 
 with open('example/pca_settings.pkl', 'w') as f:
     pickle.dump(settings, f)
