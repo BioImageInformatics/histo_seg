@@ -13,15 +13,14 @@ sys.path.insert(0, module_dir)
 import data_utils
 import colorNormalization as cnorm
 
-caffe_root = '/home/nathan/caffe-segnet-crf/python'
-sys.path.insert(0, caffe_root)
-try:
-    import caffe
-except:
-    print 'WARNING: Failed to load Caffe from {}'.format(caffe_root)
+def init_net(netproto, weights, caffe_root, gpumode=True):
+    sys.path.insert(0, caffe_root)
+    try:
+        import caffe
+    except:
+        print 'ERROR: Failed to load pyCaffe from {}'.format(caffe_root)
+    #/end try
 
-
-def init_net(netproto, weights, gpumode=True):
     if gpumode:
         caffe.set_mode_gpu()
     else:
@@ -87,7 +86,9 @@ def run_net(net, img, rotate=False, layer='conv_classifier'):
             activ = np.rot90(activ, 4-rot)
             activations.append( activ )
         #/end for
-        return np.prod(activations, axis=0)
+        # return np.prod(activations, axis=0)
+        return np.mean(activations, axis=0)
+
     elif rotate and batchsize == 4:
         img_in = [img_to_caffe(np.rot90(img, rot)) for rot in range(4)]
         # img_in = [img_to_caffe(img)]
@@ -101,11 +102,14 @@ def run_net(net, img, rotate=False, layer='conv_classifier'):
             act = activations_to_hwd(act)
             activ.append(np.rot90(act, 4-k))
         #/end for
-        return np.prod(activ, axis=0)
+        # return np.prod(activations, axis=0)
+        return np.mean(activations, axis=0)
+
     elif not rotate and batchsize == 1:
         _ = net.forward(data=img_to_caffe(img))
         activ = np.squeeze(net.blobs[layer].data)
         return activations_to_hwd(activ)
+
     else:
         raise ValueError('Rotate was specified, but batchsize was not 1 or 4')
     #/end if
@@ -124,6 +128,8 @@ def process_svs(svs, prob_maps, coordinates, settings):
     prefetch = settings['prefetch']
     do_normalize = settings['do_normalize']
     debug_mode = settings['DEBUGGING']
+    rotate = settings['rotate']
+    caffe_root = settings['caffe_root']
 
     svs_info = {}
     svs_info = data_utils.pull_svs_stats(svs, svs_info)
@@ -136,7 +142,7 @@ def process_svs(svs, prob_maps, coordinates, settings):
     for coords, scale, overlap, weight in zip(
         coordinates, scales, overlaps, weights):
         pmap_scale = np.zeros_like(prob_maps)
-        net = init_net(netproto, weight, gpumode=gpumode)
+        net = init_net(netproto, weight, caffe_root, gpumode=gpumode)
 
         print 'Processing {}'.format(scale)
         print 'Using {} tile coordinates'.format(len(coords))

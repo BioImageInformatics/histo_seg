@@ -85,7 +85,7 @@ def preprocessing(svs):
 
     # Boolean image of white areas
     whitemap = whitespace(img)
-    whitemap = imfill(whitemap)
+    # whitemap = imfill(whitemap)
 
     if whitemap.dtype == 'bool':
         process_map = whitemap.astype(np.uint8)

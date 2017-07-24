@@ -69,6 +69,10 @@ def main(args):
     #/end if
     ramdisk = settings['ramdisk']
 
+    ## Initialize the output file by recording the settings
+    # for key in settings.iterkeys():
+    #     print '{}: {}'.format(key, settings[key])
+
     svsbase = data_utils.svs_name(args.slide)
     svs_ramdisk = data_utils.transfer_to_ramdisk(args.slide, ramdisk)
 
@@ -90,6 +94,7 @@ def main(args):
     data_utils.save_result([prob_combo, prediction, prediction_rgb, overlay],
         svsbase, settings)
 
+    print 'Removing {}'.format(svs_ramdisk)
     data_utils.delete_from_ramdisk(svs_ramdisk)
 #/end main
 

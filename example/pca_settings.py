@@ -29,7 +29,8 @@ settings = {
 ## Stuff for the loading and saving
     'output_dir':       '/home/nathan/histo-seg/semantic-pca/analysis_wsi',
     'ramdisk':          '/dev/shm',
-## Caffe prototxt and weight files
+## Caffe root, prototxt and weight files
+    'caffe_root':       '/Users/nathaning/software/caffe-segnet-crf/python',
     'weights':          ['/home/nathan/histo-seg/semantic-pca/weights/xval_set_0_512/batchnorm_segnet_basic_crf_pca_20170712.SGD_iter_25000.caffemodel',
                          '/home/nathan/histo-seg/semantic-pca/weights/xval_set_0_1024/batchnorm_segnet_basic_crf_pca_20170712.SGD_iter_25000.caffemodel'],
     'deploy_proto':     '/home/nathan/histo-seg/semantic-pca/code/segnet_basic_crfrnn_deploy.prototxt',
@@ -44,11 +45,11 @@ settings = {
     'DEBUGGING':        False,
 }
 
-# Assertions to check settings validity
-assert len(settings['scales']) == len(settings['weights'])
-assert len(settings['scales']) == len(settings['overlaps'])
-assert n_classes == len(settings['class_names'])
-assert n_classes == settings['colors'].shape[0]
+### Assertions to check settings validity
+# assert len(settings['scales']) == len(settings['weights'])
+# assert len(settings['scales']) == len(settings['overlaps'])
+# assert n_classes == len(settings['class_names'])
+# assert n_classes == settings['colors'].shape[0]
 
 
 with open('example/pca_settings.pkl', 'w') as f:
