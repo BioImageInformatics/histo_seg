@@ -73,7 +73,8 @@ def activations_to_hwd(ndarr):
 
 def run_net(net, img, rotate=False, layer='conv_classifier'):
     activations = []
-    if rotate:
+    batchsize = net.blobs['data'].shape[0]
+    if rotate and batchsize == 1:
         _ = net.forward(data=img_to_caffe(img))
         activ = np.squeeze(net.blobs[layer].data)
         activations.append(activations_to_hwd(activ))
@@ -87,10 +88,26 @@ def run_net(net, img, rotate=False, layer='conv_classifier'):
             activations.append( activ )
         #/end for
         return np.prod(activations, axis=0)
-    else:
+    elif rotate and batchsize == 4:
+        img_in = [img_to_caffe(np.rot90(img, rot)) for rot in range(4)]
+        # img_in = [img_to_caffe(img)]
+        # for rot in range(1,4):
+        #     img_in.append(img_to_caffe(np.rot90(img, rot)))
+        #/end for
+        _ = net.forward(data=np.concatenate(img_in, axis=0))  # (4,3,h,w)
+        activ = []
+        for k in range(4):
+            act = np.squeeze(net.blobs[layer].data)
+            act = activations_to_hwd(act)
+            activ.append(np.rot90(act, 4-k))
+        #/end for
+        return np.prod(activ, axis=0)
+    elif not rotate and batchsize == 1:
         _ = net.forward(data=img_to_caffe(img))
         activ = np.squeeze(net.blobs[layer].data)
         return activations_to_hwd(activ)
+    else:
+        raise ValueError('Rotate was specified, but batchsize was not 1 or 4')
     #/end if
 #/end run_net
 
@@ -106,7 +123,7 @@ def process_svs(svs, prob_maps, coordinates, settings):
     n_classes = settings['n_classes']
     prefetch = settings['prefetch']
     do_normalize = settings['do_normalize']
-    rotate = settings['rotate']
+    debug_mode = settings['DEBUGGING']
 
     svs_info = {}
     svs_info = data_utils.pull_svs_stats(svs, svs_info)
@@ -139,9 +156,9 @@ def process_svs(svs, prob_maps, coordinates, settings):
         #/end if
 
         ## A subset for speed
-        indices = np.random.choice(range(len(coords)), 250)
-        coords = [coords[index] for index in indices]
-        print 'Subsetted {} coordinates '.format(len(coords))
+        #indices = np.random.choice(range(len(coords)), 50)
+        #coords = [coords[index] for index in indices]
+        #print 'Subsetted {} coordinates '.format(len(coords))
 
         failed_count = 0
         load_size = proc_size = settings['proc_size']
@@ -174,7 +191,7 @@ def process_svs(svs, prob_maps, coordinates, settings):
                 tiles = [cnorm.normalize(tile) for tile in tiles]
             #/end if
 
-            print '{} Tiles prepared in {:3.3f}s'.format(len(tiles), time.time() - preload_start),
+            print '{} Tiles preloaded in {:3.3f}s'.format(len(tiles), time.time() - preload_start),
 
             ## Processing here
             # tiles = [cv2.cvtColor(tile, cv2.COLOR_RGB2GRAY) for tile in tiles]
