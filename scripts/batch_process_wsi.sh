@@ -1,5 +1,7 @@
 #/bin/bash
 
+set -e
+
 # for svs in $( ls /home/nathan/data/pca_wsi/SPIE_TEST/*svs ); do
 #   echo $svs
 # done

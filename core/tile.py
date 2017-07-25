@@ -24,16 +24,22 @@ The new way to think about it is the lowest dim will always be 5x.
 [(40x), 20x, 10x, 5x]
 '''
 
-def whitespace(img, white_pt=210):
+def whitespace(img, mode='Otsu', white_pt=210):
     if len(img.shape)==3:
         img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
     #/end if
-    bcg_level, img = cv2.threshold(img, 0, 255,
-                                          cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (13, 13))
-    img = cv2.morphologyEx(img, cv2.MORPH_OPEN, kernel)
 
-    return img > 0
+    if mode=='Ostu':
+        bcg_level, img = cv2.threshold(img, 0, 255,
+                                              cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (13, 13))
+        img = cv2.morphologyEx(img, cv2.MORPH_OPEN, kernel)
+        return img > 0
+    elif mode=='thresh':
+        return img < white_pt
+    else
+        raise ValueError('tile::whitespace mode must be "Otsu" or "thresh"')
+    #/end if
 #/end whitespace
 
 
@@ -84,9 +90,11 @@ def preprocessing(svs):
     img = data_utils.read_low_level(svs)
 
     # Boolean image of white areas
-    whitemap = whitespace(img)
+    whitemap = whitespace(img, mode='thresh')
     # whitemap = imfill(whitemap)
 
+
+    ## Really shouldn't need this
     if whitemap.dtype == 'bool':
         process_map = whitemap.astype(np.uint8)
     elif whitemap.dtype == 'uint8':
