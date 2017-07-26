@@ -8,6 +8,7 @@ not reconstructing from tiles this time
 import cv2
 import numpy as np
 import sys
+import os
 
 module_dir, module_name = os.path.split(__file__)
 sys.path.insert(0, module_dir)

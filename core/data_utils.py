@@ -70,7 +70,7 @@ def read_region(svs, x, y, level, size, verbose=False):
 
 
 ''' Load up a bunch of tiles as an ndarray '''
-def preload_tiles(svs, coords, level, size, as_ndarray=False, normalize=True):
+def preload_tiles(svs, coords, level, size, as_ndarray=False, normalize=False):
     tiles = [read_region(svs, x, y, level, size= size)
              for (y,x) in coords]
 
