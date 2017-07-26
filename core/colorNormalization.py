@@ -44,11 +44,6 @@ def normalize(image, target=None):
     imageBMean = imageBM.mean()
     imageBSTD = imageBM.std() + epsilon
 
-    if verbose:
-        print "Mean/Std vector: [[{:3.3f},{:3.3f}], [{:3.3f},{:3.3f}], [{:3.3f},{:3.3f}]]".format(
-            imageLMean, imageLSTD, imageAMean, imageASTD, imageBMean, imageBSTD
-        )
-
     # normalization in lab
     imageL = (imageL - imageLMean) / imageLSTD * target[0][1] + target[0][0]
     imageA = (imageA - imageAMean) / imageASTD * target[1][1] + target[1][0]

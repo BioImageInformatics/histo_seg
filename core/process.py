@@ -190,7 +190,7 @@ def process_svs(svs, prob_maps, coordinates, settings):
             ## tile preloading
             preload_start = time.time()
             tiles = data_utils.preload_tiles(svs, coord_prefetch,
-                size=(load_size, load_size), level=lvl20_index, normalize=False)
+                    size=(load_size, load_size), level=lvl20_index)
             tiles = [cv2.resize(tile, dsize=(proc_size, proc_size)) for tile in tiles]
 
             if do_normalize:

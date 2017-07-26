@@ -46,9 +46,9 @@ p15
 (lp16
 S'probability'
 p17
-aS'argmaxRGB'
-p18
 aS'argmax'
+p18
+aS'argmaxRGB'
 p19
 aS'overlay'
 p20
@@ -65,7 +65,7 @@ S'dev'
 p25
 sS'output_dir'
 p26
-S'/home/nathan/histo-seg/semantic-pca/analysis_wsi'
+S'/home/nathan/histo-seg/semantic-pca/analysis_wsi/segnet_basic'
 p27
 sS'n_classes'
 p28
@@ -77,7 +77,7 @@ I16
 aI16
 asS'caffe_root'
 p31
-S'/Users/nathaning/software/caffe-segnet-crf/python'
+S'/home/nathan/caffe-segnet-crf/python'
 p32
 sS'replace_value'
 p33
@@ -95,7 +95,7 @@ I-2
 aI-1
 asS'deploy_proto'
 p38
-S'/home/nathan/histo-seg/semantic-pca/code/segnet_basic_crfrnn_deploy.prototxt'
+S'/home/nathan/histo-seg/semantic-pca/code/segnet_basic_deploy.prototxt'
 p39
 sS'rotate'
 p40
@@ -106,9 +106,9 @@ I00
 sS'weights'
 p42
 (lp43
-S'/home/nathan/histo-seg/semantic-pca/weights/xval_set_0_512/batchnorm_segnet_basic_crf_pca_20170712.SGD_iter_25000.caffemodel'
+S'/home/nathan/histo-seg/semantic-pca/weights/xval_set_0_512/batchnorm_segnet_basic_pca_20170712.SGD_iter_65000.caffemodel'
 p44
-aS'/home/nathan/histo-seg/semantic-pca/weights/xval_set_0_1024/batchnorm_segnet_basic_crf_pca_20170712.SGD_iter_25000.caffemodel'
+aS'/home/nathan/histo-seg/semantic-pca/weights/xval_set_0_1024/batchnorm_segnet_basic_pca_20170712.SGD_iter_65000.caffemodel'
 p45
 asS'prefetch'
 p46

@@ -37,7 +37,7 @@ def whitespace(img, mode='Otsu', white_pt=210):
         return img > 0
     elif mode=='thresh':
         return img < white_pt
-    else
+    else:
         raise ValueError('tile::whitespace mode must be "Otsu" or "thresh"')
     #/end if
 #/end whitespace
