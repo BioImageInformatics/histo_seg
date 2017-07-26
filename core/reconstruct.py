@@ -28,6 +28,7 @@ def post_process(prob):
     layers = [ cv2.morphologyEx(layer, cv2.MORPH_OPEN, kernel_circle) for layer in layers ]
 
     return np.dstack(layers)
+#/end post_process
 
 
 '''

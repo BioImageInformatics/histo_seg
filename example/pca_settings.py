@@ -30,9 +30,10 @@ settings = {
     'output_dir':       '/home/nathan/histo-seg/semantic-pca/analysis_wsi/segnet_basic',
     'ramdisk':          '/dev/shm',
 ## Caffe root, prototxt and weight files
-    'caffe_root':       '/Users/nathaning/software/caffe-segnet-crf/python',
-    'weights':          ['/home/nathan/histo-seg/semantic-pca/weights/xval_set_0_512/batchnorm_segnet_basic_pca_20170712.SGD_iter_75000.caffemodel',
-                         '/home/nathan/histo-seg/semantic-pca/weights/xval_set_0_1024/batchnorm_segnet_basic_pca_20170712.SGD_iter_75000.caffemodel'],
+    # 'caffe_root':       '/Users/nathaning/software/caffe-segnet-crf/python',
+    'caffe_root':       '/home/nathan/caffe-segnet-crf/python',
+    'weights':          ['/home/nathan/histo-seg/semantic-pca/weights/xval_set_0_512/batchnorm_segnet_basic_pca_20170712.SGD_iter_65000.caffemodel',
+                         '/home/nathan/histo-seg/semantic-pca/weights/xval_set_0_1024/batchnorm_segnet_basic_pca_20170712.SGD_iter_65000.caffemodel'],
     'deploy_proto':     '/home/nathan/histo-seg/semantic-pca/code/segnet_basic_deploy.prototxt',
 ## Options
     'rotate':           True,
