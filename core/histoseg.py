@@ -79,7 +79,7 @@ def main(args):
     svs = data_utils.open_slide(svs_ramdisk)
 
     # start -- do tiling / preprocessing
-    coordinates, prob_maps, background = tile.tile_svs(svs, settings)
+    coordinates, prob_maps, background, detailed_bcg = tile.tile_svs(svs, settings)
 
     # keep going
     process_start = time.time()
@@ -90,8 +90,8 @@ def main(args):
 
     # done?
     prob_combo, prediction, prediction_rgb, overlay = reconstruct.reconstruct(prob_maps,
-        svs, background, settings)
-    data_utils.save_result([prob_combo, prediction, prediction_rgb, overlay],
+        svs, detailed_bcg, settings)
+    data_utils.save_result([prob_combo, prediction, prediction_rgb, overlay, 1-background],
         svsbase, settings)
 
     print 'Removing {}'.format(svs_ramdisk)

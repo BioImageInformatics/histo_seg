@@ -41,7 +41,7 @@ settings = {
     'gpumode':          True,
     'cnnlayer':         'prob',
     'do_normalize':     True,
-    'output_filenames': ['probability', 'argmax', 'argmaxRGB', 'overlay'],
+    'output_filenames': ['probability', 'argmax', 'argmaxRGB', 'overlay', 'tissue'],
     'prefetch':         1000,
     'DEBUGGING':        False,
 }

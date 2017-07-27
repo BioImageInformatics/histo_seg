@@ -108,6 +108,7 @@ def reconstruct(prob_maps, svs, background, settings):
     # Take a weighted average
     # prob_map = np.average(prob_maps, weights=scale_weights, axis=0)
     prob_map = np.prod(prob_maps, axis=0)
+    # prob_map = np.mean(prob_maps, axis=0)
 
     prob_map = filter_probability(prob_map)
 
@@ -124,3 +125,4 @@ def reconstruct(prob_maps, svs, background, settings):
     overlay, prob_max_color = impose_overlay(prob_max, overlay, colors)
 
     return prob_map, prob_max, prob_max_color, overlay
+#/end reconstruct

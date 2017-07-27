@@ -6,9 +6,7 @@ E. Reinhard "Color transfer between images" <em>IEEE Comput. Graph. Appl.</em> v
 image
     3-channel RGB space image
 target
-    3x2 numpy ndarray float64
-verbose
-    boolean choice to print feedback to stdout
+    3x2 ndarray float64
 '''
 
 import numpy as np
