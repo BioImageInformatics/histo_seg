@@ -36,7 +36,7 @@ settings = {
                          '/home/nathan/histo-seg/semantic-pca/weights/xval_set_0_1024/batchnorm_segnet_basic_pca_20170712.SGD_iter_65000.caffemodel'],
     'deploy_proto':     '/home/nathan/histo-seg/semantic-pca/code/segnet_basic_deploy.prototxt',
 ## Options
-    'rotate':           True,
+    'rotate':           False,
     'do_post_processing': False,
     'gpumode':          True,
     'cnnlayer':         'prob',

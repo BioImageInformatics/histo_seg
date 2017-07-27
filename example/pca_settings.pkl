@@ -101,7 +101,7 @@ S'/home/nathan/histo-seg/semantic-pca/code/segnet_basic_deploy.prototxt'
 p40
 sS'rotate'
 p41
-I01
+I00
 sS'do_post_processing'
 p42
 I00

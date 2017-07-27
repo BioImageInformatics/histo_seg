@@ -157,6 +157,9 @@ def save_result(imgs, svsbase, settings):
             #     cv2.imwrite(filename_, (img == index).astype(np.uint8)*255)
 
         elif filename == 'probability':
+            print 'Writing probability npy {}'.format(img.shape)
+            filename_ = os.path.join(output_dir, svsbase+'_'+filename+'.npy')
+            np.save(filename_, img)
             ext = '.jpg'
             mult = 255/img.max()
         elif filename == 'tissue':
