@@ -162,9 +162,9 @@ def process_svs(svs, prob_maps, coordinates, settings):
         #/end if
 
         ## A subset for speed
-        #indices = np.random.choice(range(len(coords)), 50)
-        #coords = [coords[index] for index in indices]
-        #print 'Subsetted {} coordinates '.format(len(coords))
+        # indices = np.random.choice(range(len(coords)), 100)
+        # coords = [coords[index] for index in indices]
+        # print 'Subsetted {} coordinates '.format(len(coords))
 
         failed_count = 0
         load_size = proc_size = settings['proc_size']

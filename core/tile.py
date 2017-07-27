@@ -36,7 +36,11 @@ def whitespace(img, mode='Otsu', white_pt=210):
         img = cv2.morphologyEx(img, cv2.MORPH_OPEN, kernel)
         return img > 0
     elif mode=='thresh':
-        return img < white_pt
+        foreground = (img < white_pt).astype(np.uint8)
+        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (13, 13))
+        foreground = cv2.morphologyEx(foreground, cv2.MORPH_OPEN, kernel)
+
+        return foreground > 0
     else:
         raise ValueError('tile::whitespace mode must be "Otsu" or "thresh"')
     #/end if
@@ -67,22 +71,17 @@ def imfill(img):
         img = img.astype(np.uint8)
     #/end if
 
-    img_fill = np.copy(img)
-    # Mask used to flood filling.
-    # Notice the size needs to be 2 pixels than the image.
-    h, w = img_fill.shape[:2]
-    mask = np.zeros((h+2, w+2), np.uint8)
+    ## Old way:
+    # https://www.learnopencv.com/filling-holes-in-an-image-using-opencv-python-c/
 
-    # Floodfill from point (0, 0)
-    cv2.floodFill(img_fill, mask, (0,0), 255);
+    # open cv contours
+    cnts, _ = cv2.findContours(img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    ## TODO hard code area threshold
+    hulls = [cv2.convexHull(cnt) for cnt in cnts if cv2.contourArea(cnt) > 2000]
+    img2 = np.zeros_like(img)
+    cv2.drawContours(img2, hulls, -1, (1), -1)
 
-    # Invert floodfilled image
-    im_floodfill_inv = cv2.bitwise_not(img_fill)
-
-    # Combine the two images to get the foreground.
-    im_out = img | im_floodfill_inv
-    im_out = im_out > 1
-    return im_out
+    return img2 > 0
 #/end imfill
 
 
@@ -91,17 +90,17 @@ def preprocessing(svs):
 
     # Boolean image of white areas
     whitemap = whitespace(img, mode='thresh')
-    # whitemap = imfill(whitemap)
+    whitemap_filled = imfill(whitemap)
 
 
     ## Really shouldn't need this
-    if whitemap.dtype == 'bool':
-        process_map = whitemap.astype(np.uint8)
-    elif whitemap.dtype == 'uint8':
-        process_map = whitemap
+    if whitemap_filled.dtype == 'bool':
+        process_map = whitemap_filled.astype(np.uint8)
+    elif whitemap_filled.dtype == 'uint8':
+        process_map = whitemap_filled
     #/end if
 
-    return process_map
+    return process_map, whitemap
 #/end preprocessing
 
 
@@ -208,7 +207,7 @@ take in an svs file and settings,
 return a list of coordinates according to the tile size, and overlap
 '''
 def tile_svs(svs, settings):
-    foreground = preprocessing(svs)
+    foreground, original_foreground = preprocessing(svs)
     # background = cv2.bitwise_not(foreground)
     background = 1 - foreground
 
@@ -219,5 +218,5 @@ def tile_svs(svs, settings):
     coordinates, _ = get_coordinates(svs, foreground, settings)
     print 'Found {} foreground candidates'.format(len(coordinates[0]))
 
-    return coordinates, prob_maps, background
+    return coordinates, prob_maps, background, (1-original_foreground)
 #/end tile_svs

@@ -159,6 +159,9 @@ def save_result(imgs, svsbase, settings):
         elif filename == 'probability':
             ext = '.jpg'
             mult = 255/img.max()
+        elif filename == 'tissue':
+            ext = '.png'
+            mult = 255
         else:
             ext = '.jpg'
             mult = 1
