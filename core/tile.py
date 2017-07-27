@@ -119,15 +119,21 @@ def nrow_ncol(svs_info, tilesize, overlap):
     return tile_top, overlap_top, nrow, ncol
 #/end nrow_ncol
 
+'''
+Should return float32 3D array (h,w,n_classes)
 
-def init_outputs(sample, n_classes, default_class):
-    h, w = sample.shape[:2]
+Trying to set a default class here.. it's not working.
+'''
+def init_outputs(foreground, n_classes, default_class):
+    h, w = foreground.shape[:2]
     prob_maps = []
     for k in range(n_classes):
+        # prob_maps.append(np.zeros(shape=(h,w), dtype=np.float32))
         if k == default_class:
             prob_maps.append(np.ones(shape=(h,w), dtype=np.float32))
         else:
             prob_maps.append(np.zeros(shape=(h,w), dtype=np.float32))
+        #/end if
     #/end for
 
     prob_maps = np.dstack(prob_maps)

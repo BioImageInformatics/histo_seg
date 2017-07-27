@@ -63,11 +63,11 @@ S'prob'
 p24
 sS'title'
 p25
-S'dev'
+S'segnet_basic_crf'
 p26
 sS'output_dir'
 p27
-S'/home/nathan/histo-seg/semantic-pca/analysis_wsi/segnet_basic'
+S'/home/nathan/histo-seg/semantic-pca/analysis_wsi/segnet_basic_crf'
 p28
 sS'n_classes'
 p29
@@ -97,7 +97,7 @@ I-2
 aI-1
 asS'deploy_proto'
 p39
-S'/home/nathan/histo-seg/semantic-pca/code/segnet_basic_deploy.prototxt'
+S'/home/nathan/histo-seg/semantic-pca/code/segnet_basic_crfrnn_deploy.prototxt'
 p40
 sS'rotate'
 p41
@@ -108,9 +108,9 @@ I00
 sS'weights'
 p43
 (lp44
-S'/home/nathan/histo-seg/semantic-pca/weights/xval_set_0_512/batchnorm_segnet_basic_pca_20170712.SGD_iter_65000.caffemodel'
+S'/home/nathan/histo-seg/semantic-pca/weights/xval_set_0_512/batchnorm_segnet_basic_crf_pca_20170712.SGD_iter_25000.caffemodel'
 p45
-aS'/home/nathan/histo-seg/semantic-pca/weights/xval_set_0_1024/batchnorm_segnet_basic_pca_20170712.SGD_iter_65000.caffemodel'
+aS'/home/nathan/histo-seg/semantic-pca/weights/xval_set_0_1024/batchnorm_segnet_basic_crf_pca_20170712.SGD_iter_25000.caffemodel'
 p46
 asS'prefetch'
 p47

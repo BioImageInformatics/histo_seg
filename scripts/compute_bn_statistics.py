@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 ## From caffe-segnet source
+## See github.com/alexgkendall/SegNet-Tutorial
 
 import os
 import numpy as np
@@ -200,7 +201,7 @@ def run(out_dir, train_model, weights, out_name):
 
     ## save deploy prototxt
     print "Saving deployment prototext file..."
-    test_path = os.path.join(args.out_dir, "deploy_crf.prototxt")
+    test_path = os.path.join(args.out_dir, "deploy_segnet_crf.prototxt")
     with open(test_path, 'w') as f:
        f.write(text_format.MessageToString(test_msg))
 

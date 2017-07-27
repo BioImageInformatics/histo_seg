@@ -141,7 +141,8 @@ def process_svs(svs, prob_maps, coordinates, settings):
     pmap_out = []
     for coords, scale, overlap, weight in zip(
         coordinates, scales, overlaps, weights):
-        pmap_scale = np.zeros_like(prob_maps)
+        pmap_scale = np.copy(prob_maps)
+        # pmap_scale = np.zeros_like(prob_maps)
         net = init_net(netproto, weight, caffe_root, gpumode=gpumode)
 
         print 'Processing {}'.format(scale)
@@ -162,7 +163,7 @@ def process_svs(svs, prob_maps, coordinates, settings):
         #/end if
 
         ## A subset for speed
-        # indices = np.random.choice(range(len(coords)), 100)
+        # indices = np.random.choice(range(len(coords)), 500)
         # coords = [coords[index] for index in indices]
         # print 'Subsetted {} coordinates '.format(len(coords))
 

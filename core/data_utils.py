@@ -64,7 +64,7 @@ def read_region(svs, x, y, level, size, verbose=False):
     img = svs.read_region((x,y), level, size)
     img = np.array(img)
     img = cv2.cvtColor(img, cv2.COLOR_RGBA2RGB)
-    # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB) ## This actually needs to be here
     return img
 #/end read_region
 
@@ -98,8 +98,9 @@ def read_low_level(svs, verbose=False):
         low_index = svs.level_count - 1
     #/end if
 
-    return read_region(svs, 0, 0, low_index,
+    img = read_region(svs, 0, 0, low_index,
         svs.level_dimensions[low_index], verbose=verbose)
+    return img
 #/end read_low_level
 
 
@@ -150,28 +151,31 @@ def save_result(imgs, svsbase, settings):
 
     for img, filename in zip(imgs, output_filenames):
         if 'argmax' in filename:
-            ext = '.png'
-            mult = 1
-            # for index in np.unique(img):
-            #     filename_ = os.path.join(output_dir, svsbase+'_{}_'.format(index)+filename+ext)
-            #     cv2.imwrite(filename_, (img == index).astype(np.uint8)*255)
-
+            filename_ = os.path.join(output_dir, svsbase+'_'+filename+'.png')
+            print 'Saving {}'.format(filename_)
+            cv2.imwrite(filename_, img)
         elif filename == 'probability':
             print 'Writing probability npy {}'.format(img.shape)
             filename_ = os.path.join(output_dir, svsbase+'_'+filename+'.npy')
             np.save(filename_, img)
-            ext = '.jpg'
-            mult = 255/img.max()
+            print 'Writing probability jpg {}'.format(img.shape)
+            filename_ = os.path.join(output_dir, svsbase+'_'+filename+'.jpg')
+            cv2.imwrite(filename_, img*255/img.max())
         elif filename == 'tissue':
             ext = '.png'
             mult = 255
-        else:
+            filename_ = os.path.join(output_dir, svsbase+'_'+filename+ext)
+            print 'Saving {}'.format(filename_)
+            cv2.imwrite(filename_, img*mult)
+        elif filename == 'overlay':
             ext = '.jpg'
-            mult = 1
+            filename_ = os.path.join(output_dir, svsbase+'_'+filename+ext)
+            print 'Saving {}'.format(filename_)
+            cv2.imwrite(filename_, img)
+        else:
+            print 'Filename {} does not match a mode. Edit in settings'
+            continue
         #/end if
 
-        filename_ = os.path.join(output_dir, svsbase+'_'+filename+ext)
-        print 'Saving {}'.format(filename_)
-        cv2.imwrite(filename_, img*mult)
     #/end for
 #/end save_result

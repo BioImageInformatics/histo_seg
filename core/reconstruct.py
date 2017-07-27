@@ -75,7 +75,7 @@ def impose_overlay(label, target, colors):
 #
 # #/end impose_overlay
 
-def filter_probability(probs, thresh=0.5, layers=[0,1,2]):
+def filter_probability(probs, thresh=0.5, layers=[0,1]):
     probs_ = np.copy(probs)
     for k in layers:
         probs_[(probs_[:,:,k] < thresh), k] = 0
@@ -107,10 +107,10 @@ def reconstruct(prob_maps, svs, background, settings):
 
     # Take a weighted average
     # prob_map = np.average(prob_maps, weights=scale_weights, axis=0)
-    prob_map = np.prod(prob_maps, axis=0)
-    # prob_map = np.mean(prob_maps, axis=0)
+    # prob_map = np.prod(prob_maps, axis=0)
+    prob_map = np.mean(prob_maps, axis=0)
 
-    prob_map = filter_probability(prob_map)
+    # prob_map = filter_probability(prob_map)
 
     # prob_map = np.mean(prob_maps, axis=0)
 
