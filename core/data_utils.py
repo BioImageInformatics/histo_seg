@@ -64,7 +64,7 @@ def read_region(svs, x, y, level, size, verbose=False):
     img = svs.read_region((x,y), level, size)
     img = np.array(img)
     img = cv2.cvtColor(img, cv2.COLOR_RGBA2RGB)
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     return img
 #/end read_region
 
@@ -126,7 +126,7 @@ def delete_from_ramdisk(filename):
     except:
         return 0
     #/end try
-#/end transfer_to_ramdisk
+#/end delete_from_ramdisk
 
 '''
 Return the basename
