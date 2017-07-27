@@ -120,11 +120,14 @@ def nrow_ncol(svs_info, tilesize, overlap):
 #/end nrow_ncol
 
 
-def init_outputs(sample, n_classes):
+def init_outputs(sample, n_classes, default_class):
     h, w = sample.shape[:2]
     prob_maps = []
     for k in range(n_classes):
-        prob_maps.append(np.zeros(shape=(h,w), dtype=np.float32))
+        if k == default_class:
+            prob_maps.append(np.ones(shape=(h,w), dtype=np.float32))
+        else:
+            prob_maps.append(np.zeros(shape=(h,w), dtype=np.float32))
     #/end for
 
     prob_maps = np.dstack(prob_maps)
@@ -212,7 +215,7 @@ def tile_svs(svs, settings):
     background = 1 - foreground
 
     # probability images are at 5x
-    prob_maps = init_outputs(foreground, settings['n_classes'])
+    prob_maps = init_outputs(foreground, settings['n_classes'], settings['replace_value'])
     print 'Scanning for foreground tiles'
     # coordinates, coordinates_low = get_coordinates(svs, foreground, svs_info, settings)
     coordinates, _ = get_coordinates(svs, foreground, settings)
