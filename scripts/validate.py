@@ -324,6 +324,11 @@ def eval_all(gt_list, test_list, printfreq=500, verbose=False):
     test_all = None
     for index, (gt_pth, test_pth) in enumerate(zip(gt_list, test_list)):
         gt_img, test_img = load_images(gt_pth, test_pth, verbose=verbose)
+        if gt_img.shape[0] != test_img.shape[0]:
+            cv2.resize(gt_img, dsize=(test_img.shape[:2]),
+                interpolation=cv2.INTER_NEAREST)
+        #/end if
+        
         gt_all, test_all = build_stack(gt_all, test_all, gt_img, test_img)
 
         if index % printfreq == 0:
@@ -397,7 +402,7 @@ $ python validate.py /path/masks /path/masks2 /path/report.txt
 if __name__ == '__main__':
     # reportfile = None
     # subset is float or None
-    subset = 1.0
+    subset = None
 
     # Parse command line arguments
     gt_dir = sys.argv[1]
