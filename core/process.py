@@ -61,6 +61,8 @@ def imgs_to_caffe_batch(imgs):
     pass
 #/end imgs_to_caffe_batch
 
+
+
 ''' This function instead of np.rollaxis or similar '''
 def activations_to_hwd(ndarr):
     nd = ndarr.shape[0]
@@ -69,6 +71,8 @@ def activations_to_hwd(ndarr):
     ndarr = [np.expand_dims(n,2) for n in ndarr] ## make 3D (h,w,1)
     return np.dstack(ndarr) ## stack 3D (h,w,nd)
 #/end activations_to_hwd
+
+
 
 
 def run_net(net, img, rotate=False, layer='conv_classifier'):
@@ -234,6 +238,8 @@ def process_svs(svs, prob_maps, coordinates, settings):
             # #/end if
 
             ## x, y are w.r.t. 20X
+            if overlap < 1 and overlap > 0:
+                overlap = load_size * overlap
             ovp = int(overlap * mult_5x)
             inner = [ovp, place_size-ovp]
             in_out = np.zeros((place_size, place_size), dtype=np.bool)
