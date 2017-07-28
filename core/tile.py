@@ -187,6 +187,8 @@ def get_coordinates(svs, foreground, settings):
         #/end if
 
         lvl20size = proc_size * mult
+        if overlap < 1 and overlap > 0:
+            overlap = lvl20size * overlap
 
         ## Get the lattice grid w/r/t level 0 and correctly sized tiles
         nrow, ncol = int(lvl20_dims[0]/(lvl20size-overlap)), int(lvl20_dims[1]/(lvl20size-overlap))
