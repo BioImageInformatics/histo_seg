@@ -142,8 +142,8 @@ def process_svs(svs, prob_maps, coordinates, settings):
     pmap_out = []
     for coords, scale, weight in zip(
         coordinates, scales, weights):
-        # pmap_scale = np.copy(prob_maps)  ## use this line to enforce default class
-        pmap_scale = np.zeros_like(prob_maps)
+        pmap_scale = np.copy(prob_maps)  ## use this line to enforce default class
+        # pmap_scale = np.zeros_like(prob_maps)
         # for enforcing the border
         h,w = pmap_scale.shape[:2]
         processed = np.zeros((h,w), dtype=np.bool)
@@ -151,6 +151,8 @@ def process_svs(svs, prob_maps, coordinates, settings):
         net = init_net(netproto, weight, caffe_root, gpumode=gpumode)
 
         print 'Processing {}'.format(scale)
+        print 'Shuffling coordinates'
+        random.shuffle(coords)
         print 'Using {} tile coordinates'.format(len(coords))
 
         if scale == '20x':
@@ -175,8 +177,8 @@ def process_svs(svs, prob_maps, coordinates, settings):
         place_size = proc_size * place_mult
         place_size = int(place_size)
 
-        print 'load_size:', load_size
-        print 'place_size:', place_size
+        # print 'load_size:', load_size
+        # print 'place_size:', place_size
 
         ## Divide the set into n chunks
         if len(coords) < prefetch:
@@ -195,7 +197,7 @@ def process_svs(svs, prob_maps, coordinates, settings):
         for nindx, coord_prefetch in enumerate(coord_split):
             ## tile preloading
             preload_start = time.time()
-            random.shuffle(coord_prefetch)
+            # random.shuffle(coord_prefetch)
             tiles = data_utils.preload_tiles(svs, coord_prefetch,
                     size=(load_size, load_size), level=lvl20_index)
             tiles = [cv2.resize(tile, dsize=(proc_size, proc_size)) for tile in tiles]
@@ -248,6 +250,8 @@ def process_svs(svs, prob_maps, coordinates, settings):
                     tile_out = tile[in_out==0]
                     # placeholder_out = placeholder[in_out==0]
                     # border = np.mean([tile_out, placeholder_out])
+
+                    ## Take a dirty average
                     placeholder[in_out==0] += tile_out
                     placeholder[in_out==0] /= 2
                     pmap_scale[row:row+place_size, col:col+place_size, :] = placeholder
