@@ -1,53 +1,59 @@
 #!/bin/bash
 
 pth="/home/nathan/histo-seg/semantic-pca"
+expt="analysis_segnet_basic"
 
-dataset="xval_set_0_512"
+dataset="xval_set_0"
+testdir=$dataset"_512"
 python validate.py $pth/data/$dataset/val/mask \
-$pth/analysis_crf/$dataset \
-$pth/analysis_crf/report.$dataset.txt
+$pth/$expt/$testdir \
+$pth/$expt/report.$testdir.txt
 
-dataset="xval_set_1_512"
+testdir=$dataset"_1024"
 python validate.py $pth/data/$dataset/val/mask \
-$pth/analysis_crf/$dataset \
-$pth/analysis_crf/report.$dataset.txt
+$pth/$expt/$testdir \
+$pth/$expt/report.$testdir.txt
 
-dataset="xval_set_2_512"
+dataset="xval_set_1"
+testdir=$dataset"_512"
 python validate.py $pth/data/$dataset/val/mask \
-$pth/analysis_crf/$dataset \
-$pth/analysis_crf/report.$dataset.txt
+$pth/$expt/$testdir \
+$pth/$expt/report.$testdir.txt
 
-dataset="xval_set_3_512"
+testdir=$dataset"_1024"
 python validate.py $pth/data/$dataset/val/mask \
-$pth/analysis_crf/$dataset \
-$pth/analysis_crf/report.$dataset.txt
+$pth/$expt/$testdir \
+$pth/$expt/report.$testdir.txt
 
-dataset="xval_set_4_512"
+dataset="xval_set_2"
+testdir=$dataset"_512"
 python validate.py $pth/data/$dataset/val/mask \
-$pth/analysis_crf/$dataset \
-$pth/analysis_crf/report.$dataset.txt
+$pth/$expt/$testdir \
+$pth/$expt/report.$testdir.txt
 
-dataset="xval_set_0_1024"
+testdir=$dataset"_1024"
 python validate.py $pth/data/$dataset/val/mask \
-$pth/analysis_crf/$dataset \
-$pth/analysis_crf/report.$dataset.txt
+$pth/$expt/$testdir \
+$pth/$expt/report.$testdir.txt
 
-dataset="xval_set_1_1024"
+dataset="xval_set_3"
+testdir=$dataset"_512"
 python validate.py $pth/data/$dataset/val/mask \
-$pth/analysis_crf/$dataset \
-$pth/analysis_crf/report.$dataset.txt
+$pth/$expt/$testdir \
+$pth/$expt/report.$testdir.txt
 
-dataset="xval_set_2_1024"
+testdir=$dataset"_1024"
 python validate.py $pth/data/$dataset/val/mask \
-$pth/analysis_crf/$dataset \
-$pth/analysis_crf/report.$dataset.txt
+$pth/$expt/$testdir \
+$pth/$expt/report.$testdir.txt
 
-dataset="xval_set_3_1024"
+dataset="xval_set_4"
+testdir=$dataset"_512"
 python validate.py $pth/data/$dataset/val/mask \
-$pth/analysis_crf/$dataset \
-$pth/analysis_crf/report.$dataset.txt
+$pth/$expt/$testdir \
+$pth/$expt/report.$testdir.txt
 
-dataset="xval_set_4_1024"
+testdir=$dataset"_1024"
 python validate.py $pth/data/$dataset/val/mask \
-$pth/analysis_crf/$dataset \
-$pth/analysis_crf/report.$dataset.txt
+$pth/$expt/$testdir \
+$pth/$expt/report.$testdir.txt
