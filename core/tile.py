@@ -164,7 +164,7 @@ return a list of coordinates we can use to
 # def get_coordinates(svs, foreground, svs_info, settings):
 def get_coordinates(svs, foreground, settings):
     scales = settings['scales']
-    overlaps = settings['overlaps']
+    overlap = settings['overlap']
 
     svs_info = {}
     svs_info = data_utils.pull_svs_stats(svs, svs_info)
@@ -176,16 +176,13 @@ def get_coordinates(svs, foreground, settings):
     coordinates = []
     mults = []  # keep track of how to convert everything w.r.t. level 0
     # Get the multiplier to transform `scale` to 20X scale
-    for scale, overlap in zip(scales, overlaps):
+    for scale in scales:
         proc_size = settings['proc_size']
         if scale == '20x':
-            dims = svs.level_dimensions[-3][::-1]
             mult = 1
         elif scale == '10x':
-            dims = svs.level_dimensions[-2][::-1]
             mult = 2
         elif scale == '5x':
-            dims = svs.level_dimensions[-1][::-1]
             mult = 4
         #/end if
 

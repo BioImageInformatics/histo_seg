@@ -7,6 +7,7 @@ import numpy as np
 import sys
 import time
 import os
+import random
 
 module_dir, module_name = os.path.split(__file__)
 sys.path.insert(0, module_dir)
@@ -118,7 +119,7 @@ def run_net(net, img, rotate=False, layer='conv_classifier'):
 
 def process_svs(svs, prob_maps, coordinates, settings):
     # Check inputs
-    overlaps = settings['overlaps']
+    overlap = settings['overlap']
     scales = settings['scales']
     weights = settings['weights']
     netproto = settings['deploy_proto']
@@ -139,31 +140,32 @@ def process_svs(svs, prob_maps, coordinates, settings):
 
     ## Loop over scales
     pmap_out = []
-    for coords, scale, overlap, weight in zip(
-        coordinates, scales, overlaps, weights):
-        pmap_scale = np.copy(prob_maps)
-        # pmap_scale = np.zeros_like(prob_maps)
+    for coords, scale, weight in zip(
+        coordinates, scales, weights):
+        # pmap_scale = np.copy(prob_maps)  ## use this line to enforce default class
+        pmap_scale = np.zeros_like(prob_maps)
+        # for enforcing the border
+        h,w = pmap_scale.shape[:2]
+        processed = np.zeros((h,w), dtype=np.bool)
+
         net = init_net(netproto, weight, caffe_root, gpumode=gpumode)
 
         print 'Processing {}'.format(scale)
         print 'Using {} tile coordinates'.format(len(coords))
 
         if scale == '20x':
-            dims = svs.level_dimensions[-3][::-1]
             mult = 1
             place_mult = 0.25**2
         elif scale == '10x':
-            dims = svs.level_dimensions[-2][::-1]
             mult = 2
             place_mult = 1/8.
         elif scale == '5x':
-            dims = svs.level_dimensions[-1][::-1]
             mult = 4
             place_mult = 0.25
         #/end if
 
         ## A subset for speed
-        # indices = np.random.choice(range(len(coords)), 500)
+        # indices = np.random.choice(range(len(coords)), 250)
         # coords = [coords[index] for index in indices]
         # print 'Subsetted {} coordinates '.format(len(coords))
 
@@ -172,6 +174,9 @@ def process_svs(svs, prob_maps, coordinates, settings):
         load_size *= mult
         place_size = proc_size * place_mult
         place_size = int(place_size)
+
+        print 'load_size:', load_size
+        print 'place_size:', place_size
 
         ## Divide the set into n chunks
         if len(coords) < prefetch:
@@ -190,6 +195,7 @@ def process_svs(svs, prob_maps, coordinates, settings):
         for nindx, coord_prefetch in enumerate(coord_split):
             ## tile preloading
             preload_start = time.time()
+            random.shuffle(coord_prefetch)
             tiles = data_utils.preload_tiles(svs, coord_prefetch,
                     size=(load_size, load_size), level=lvl20_index)
             tiles = [cv2.resize(tile, dsize=(proc_size, proc_size)) for tile in tiles]
@@ -211,12 +217,47 @@ def process_svs(svs, prob_maps, coordinates, settings):
             tiles = [cv2.resize(tile, dsize=(place_size, place_size)) for tile in tiles]
             coord_prefetch = [(int(x * mult_5x), int(y * mult_5x)) for (x,y) in coord_prefetch]
 
+            # if overlap > 0:
+            #     ovp = int(overlap * mult_5x)
+            #     place_size_crop = place_size - ovp
+            #     bbox = [ovp,
+            #             place_size_crop,
+            #             ovp,
+            #             place_size_crop]
+            #     # print 'ovp:', ovp
+            #     # print 'bbox:', bbox
+            #     # place_size_crop -= ovp
+            #     # print 'place_size_crop:', place_size_crop
+            #
+            #     tiles = [tile[bbox[0]:bbox[1], bbox[2]:bbox[3], :] for tile in tiles]
+            #     tiles = [cv2.resize(tile, dsize=(place_size, place_size)) for tile in tiles]
+            # #/end if
+
             ## x, y are w.r.t. 20X
+            ovp = int(overlap * mult_5x)
+            inner = [ovp, place_size-ovp]
+            in_out = np.zeros((place_size, place_size), dtype=np.bool)
+            in_out[inner[0]:inner[1], inner[0]:inner[1]] = True
             for tile, (row, col) in zip(tiles, coord_prefetch):
-                try:
+                # try:
+                placeholder = pmap_scale[row:row+place_size, col:col+place_size, :]
+                processed_pl = processed[row:row+place_size, col:col+place_size]
+                if (processed_pl).sum() > 0:
+                    ## we've already placed some of this tile
+                    placeholder[in_out] = tile[in_out]
+                    tile_out = tile[in_out==0]
+                    # placeholder_out = placeholder[in_out==0]
+                    # border = np.mean([tile_out, placeholder_out])
+                    placeholder[in_out==0] += tile_out
+                    placeholder[in_out==0] /= 2
+                    pmap_scale[row:row+place_size, col:col+place_size, :] = placeholder
+                else:
                     pmap_scale[row:row+place_size, col:col+place_size, :] = tile
-                except:
-                    failed_count += 1
+                #/end if
+                processed[row:row+place_size, col:col+place_size] = True
+                # except:
+                #     print 'failed {} <-- {}'.format((row, col), tile.shape)
+                #     failed_count += 1
                 #/end try
             #/end for tile, (row,col)
             print 'Placing done in {:3.3f}s'.format(time.time() - placing_start)

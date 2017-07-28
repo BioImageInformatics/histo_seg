@@ -25,16 +25,19 @@ settings = {
     'scales':           ['10x', '5x'],
     'scale_weights':    [1,1],
     'scale_indices':    [-2, -1],
-    'overlaps':         [16, 16],
+    # 'overlaps':         [16, 16],
+    'overlap':          64,
 ## Stuff for the loading and saving
-    'output_dir':       '/home/nathan/histo-seg/semantic-pca/analysis_wsi/segnet_basic_crf',
+    'output_dir':       '/home/nathan/histo-seg/semantic-pca/analysis_wsi/segnet_full',
     'ramdisk':          '/dev/shm',
 ## Caffe root, prototxt and weight files
     # 'caffe_root':       '/Users/nathaning/software/caffe-segnet-crf/python',
     'caffe_root':       '/home/nathan/caffe-segnet-crf/python',
-    'weights':          ['/home/nathan/histo-seg/semantic-pca/weights/xval_set_0_512/batchnorm_segnet_basic_crf_pca_20170712.SGD_iter_25000.caffemodel',
-                         '/home/nathan/histo-seg/semantic-pca/weights/xval_set_0_1024/batchnorm_segnet_basic_crf_pca_20170712.SGD_iter_25000.caffemodel'],
-    'deploy_proto':     '/home/nathan/histo-seg/semantic-pca/code/segnet_basic_crfrnn_deploy.prototxt',
+    # 'weights':          ['/home/nathan/histo-seg/semantic-pca/weights/xval_set_0_512/batchnorm_segnet_basic_pca_20170712.SGD_iter_65000.caffemodel',
+    #                      '/home/nathan/histo-seg/semantic-pca/weights/xval_set_0_1024/batchnorm_segnet_basic_pca_20170712.SGD_iter_65000.caffemodel'],
+    'weights':          ['/home/nathan/histo-seg/semantic-pca/weights/xval_set_0_512/batchnorm_segnet_pca_75000.caffemodel',
+                         '/home/nathan/histo-seg/semantic-pca/weights/xval_set_0_1024/batchnorm_segnet_pca_75000.caffemodel'],
+    'deploy_proto':     '/home/nathan/histo-seg/semantic-pca/code/segnet_deploy.prototxt',
 ## Options
     'rotate':           False,
     'do_post_processing': False,
@@ -52,6 +55,7 @@ settings = {
 # assert n_classes == len(settings['class_names'])
 # assert n_classes == settings['colors'].shape[0]
 
-
-with open('example/pca_settings.pkl', 'w') as f:
+filename = 'example/segnet_full_settings.pkl'
+with open(filename, 'w') as f:
     pickle.dump(settings, f)
+print filename

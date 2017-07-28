@@ -76,23 +76,26 @@ def main(args):
     svsbase = data_utils.svs_name(args.slide)
     svs_ramdisk = data_utils.transfer_to_ramdisk(args.slide, ramdisk)
 
-    svs = data_utils.open_slide(svs_ramdisk)
+    try:
+        svs = data_utils.open_slide(svs_ramdisk)
 
-    # start -- do tiling / preprocessing
-    coordinates, prob_maps, background, detailed_bcg = tile.tile_svs(svs, settings)
+        # start -- do tiling / preprocessing
+        coordinates, prob_maps, background, detailed_bcg = tile.tile_svs(svs, settings)
 
-    # keep going
-    process_start = time.time()
-    prob_maps = process.process_svs(svs, prob_maps, coordinates, settings)
-    print
-    print 'Processing {} done in {:3.3f}s'.format(svsbase, time.time() - process_start)
-    print
+        # keep going
+        process_start = time.time()
+        prob_maps = process.process_svs(svs, prob_maps, coordinates, settings)
+        print
+        print 'Processing {} done in {:3.3f}s'.format(svsbase, time.time() - process_start)
+        print
 
-    # done?
-    prob_combo, prediction, prediction_rgb, overlay = reconstruct.reconstruct(prob_maps,
-        svs, detailed_bcg, settings)
-    data_utils.save_result([prob_combo, prediction, prediction_rgb, overlay, 1-background],
-        svsbase, settings)
+        # done?
+        prob_combo, prediction, prediction_rgb, overlay = reconstruct.reconstruct(prob_maps,
+            svs, detailed_bcg, settings)
+        data_utils.save_result([prob_combo, prediction, prediction_rgb, overlay, 1-background],
+            svsbase, settings)
+    except:
+        print 'CAUGHT AN ERROR'
 
     print 'Removing {}'.format(svs_ramdisk)
     data_utils.delete_from_ramdisk(svs_ramdisk)
