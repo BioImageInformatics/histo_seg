@@ -1,23 +1,8 @@
 #!/usr/bin/python
 
 '''
+
 Perform validation given a list of tests and list of ground truths
-
-contact:
-    ing[dot]nathany[at]gmail[dot]com
-
-Changelog
----------
-2017-04-15:
-    Initial
-
-2017-04-18:
-    Made functional
-    Added listing of tests
-    Tests are maintained in a modular list at the top
-    as globally available functions
-    Added checks for class presence in ground truth
-    Tests are only performed if the class is present in GT
 
 '''
 
@@ -56,6 +41,9 @@ code_class = {
     3:'ST',
     # 4:'G5'
 }
+
+
+''' Utility functions '''
 
 # Define two special tests:
 def epithelium(mask):
@@ -101,6 +89,7 @@ def mIOU(gt, test):
          2: 0.0,
          3: 0.0}
 
+    ## Cases where one label is present/or not in GT and TEST
     for L in labels:
         if L in gt_u and L not in test_u:
             J[L] = 0
@@ -113,7 +102,7 @@ def mIOU(gt, test):
         #/end if
     #/end for
 
-    Jsum = 0
+    Jsum = 0.0
     for key in J.iterkeys():
         Jsum += J[key]
     #/end for
@@ -139,8 +128,12 @@ metrics_list = {
     'PCaJaccard':     lambda gt,test: jaccard_similarity_score(cancer(gt),cancer(test)),
     # 'PCaprecision':          lambda gt,test: precision_score(canc(gt),canc(test))
 }
-
+'''
 # //**************************** START ******************************//
+
+Functions for listing / loading files
+
+'''
 def list_matching(gt_dir, test_dir, test_ext, shuffle=True):
     gt_list = sorted(glob.glob(os.path.join(gt_dir, '*.png')))
 
@@ -212,7 +205,9 @@ def load_images(gt_pth, test_pth, verbose=False):
 
     return gt_img, test_img
 
-
+'''
+Run tests
+'''
 def eval_mask_pair(gt_img, test_img, verbose=True):
     metrics = {key:0.0 for key in sorted(metrics_list.iterkeys())}
 
@@ -243,7 +238,7 @@ def eval_mask_pair(gt_img, test_img, verbose=True):
     return metrics
 #/end eval_mask_pair
 
-
+''' Help to print a summary '''
 def metric_list2dict(metrics):
     # Translate the list of metrics to a dict
     overall_metrics = {key:0 for key in sorted(metrics_list.iterkeys())}
@@ -261,7 +256,6 @@ def metric_list2dict(metrics):
 
     return overall_metrics
 #/end metric_list2dict
-
 
 
 def print_report(metrics_summary):
@@ -285,7 +279,6 @@ def build_stack(gt_all, test_all, gt, test):
 
     return gt_all, test_all
 #/end build_stack
-
 
 
 def eval_metrics(gt_list, test_list, printfreq=500, verbose=False):
@@ -360,6 +353,7 @@ def random_subset(gt_list, test_list, pct):
 
     return gt_list, test_list
 #/end random_subset
+
 
 def main(gt_dir, test_dir, reportfile=None, subset=None, mode='all'):
     gt_list, test_list = list_matching(gt_dir, test_dir, 'png')
