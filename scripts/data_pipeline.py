@@ -21,15 +21,11 @@ Usage:
 $ python ~/histo-seg/core/data_pipeline.py 512 10 dataset_01
 
 
-ing.nathany [at] gmail [dot] com
-nathan [dot] ing [at] cshs [dot] org
-
 '''
 
 
 # from openslide import OpenSlide
 import cv2
-import colorNormalization as cnorm
 import numpy as np
 
 import itertools
@@ -38,6 +34,8 @@ import shutil
 import os
 import sys
 
+sys.path.insert(0, '/home/nathan/histo-seg/v2/core')
+import colorNormalization as cnorm
 # /home/nathan/histo-seg/code/data_pipeline.py
 # def make_classification_training(src):
 #	 data.multiply_one_folder(src);
@@ -495,9 +493,10 @@ def make_segmentation_training(src, anno, root, scales, multiplicity, do_color=T
     return makelist(src, anno, root)
 # /end make_segmentation_training
 
+
 if __name__ == "__main__":
     scales = [1024]
-    multiplicity = [5]
+    multiplicity = [3]
     dataset_root = sys.argv[1]
 
     root = os.path.join(dataset_root, 'train')
@@ -508,11 +507,11 @@ if __name__ == "__main__":
     # impose_overlay(listfile, os.path.join(root, 'anno_cmap'))
 
     # Validation, do less.
-    multiplicity = [1]
-    root = os.path.join(dataset_root, 'val')
-    src = os.path.join(root, 'jpg')
-    anno = os.path.join(root, 'mask')
-    listfile = make_segmentation_training(src, anno, root, scales, multiplicity,
-        do_color=True, do_rotate=False)
+#    multiplicity = [1]
+#    root = os.path.join(dataset_root, 'val')
+#    src = os.path.join(root, 'jpg')
+#    anno = os.path.join(root, 'mask')
+#    listfile = make_segmentation_training(src, anno, root, scales, multiplicity,
+#        do_color=True, do_rotate=False)
     ## TODO add option for drawing overlays
     # impose_overlay(listfile, os.path.join(root, 'anno_cmap'))
