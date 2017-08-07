@@ -16,7 +16,7 @@ import numpy as np
 
 settings = {
 ## Stuff for the dataset
-    'title':            'segnet_full',
+    'title':            'segnet_basic_whole',
     'n_classes':        4,
     'class_names':      ['LowGrade', 'HighGrade', 'Benign', 'Stroma'],
     'replace_value':    3,
@@ -28,7 +28,7 @@ settings = {
     # 'overlaps':         [16, 16],
     'overlap':          64,
 ## Stuff for the loading and saving
-    'output_dir':       '/home/nathan/histo-seg/semantic-pca/analysis_wsi/segnet_full_wholeset',
+    'output_dir':       '/home/nathan/histo-seg/semantic-pca/analysis_wsi/segnet_basic_wholeset',
     'ramdisk':          '/dev/shm',
 ## Caffe root, prototxt and weight files
     # 'caffe_root':       '/Users/nathaning/software/caffe-segnet-crf/python',
@@ -37,9 +37,9 @@ settings = {
     #                      '/home/nathan/histo-seg/semantic-pca/weights/xval_set_0_1024/batchnorm_segnet_basic_pca_20170712.SGD_iter_65000.caffemodel'],
     # 'weights':          ['/home/nathan/histo-seg/semantic-pca/weights/xval_set_0_512/batchnorm_segnet_pca_75000.caffemodel',
     #                      '/home/nathan/histo-seg/semantic-pca/weights/xval_set_0_1024/batchnorm_segnet_pca_75000.caffemodel'],
-    'weights':          ['/home/nathan/histo-seg/semantic-pca/weights/whole_set_512/batchnorm_segnet_pca_200000.caffemodel',
-                         '/home/nathan/histo-seg/semantic-pca/weights/whole_set_1024/batchnorm_segnet_pca_200000.caffemodel'],
-    'deploy_proto':     '/home/nathan/histo-seg/semantic-pca/code/segnet_deploy.prototxt',
+    'weights':          ['/home/nathan/histo-seg/semantic-pca/weights/whole_set_512/batchnorm_segnet_basic_pca_250000.caffemodel',
+                         '/home/nathan/histo-seg/semantic-pca/weights/whole_set_1024/batchnorm_segnet_basic_pca_250000.caffemodel'],
+    'deploy_proto':     '/home/nathan/histo-seg/semantic-pca/code/segnet_basic_deploy.prototxt',
 ## Options
     'rotate':           False,
     'do_post_processing': False,
@@ -57,7 +57,7 @@ settings = {
 # assert n_classes == len(settings['class_names'])
 # assert n_classes == settings['colors'].shape[0]
 
-filename = 'example/segnet_full_whole_settings.pkl'
+filename = 'example/segnet_basic_whole_settings.pkl'
 with open(filename, 'w') as f:
     pickle.dump(settings, f)
 print filename

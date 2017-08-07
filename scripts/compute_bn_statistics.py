@@ -161,6 +161,7 @@ def make_parser():
     p.add_argument('--weights')
     p.add_argument('--out_dir')
     p.add_argument('--out_name')
+    p.add_argument('--out_proto', default='deploy.prototxt')
     return p
 
 
@@ -201,7 +202,7 @@ def run(out_dir, train_model, weights, out_name):
 
     ## save deploy prototxt
     print "Saving deployment prototext file..."
-    test_path = os.path.join(args.out_dir, "deploy_segnet_crf.prototxt")
+    test_path = os.path.join(args.out_dir, out_proto)
     with open(test_path, 'w') as f:
        f.write(text_format.MessageToString(test_msg))
 
@@ -215,7 +216,8 @@ Usage:
 python compute_bn_statistics.py --train_model=/path/code/model.prototxt \
 --out_dir=/path/weights/ \
 --out_name=model_BN.prototxt \
---weights=/path/weights/model_iterXXX.caffemodel
+--weights=/path/weights/model_iterXXX.caffemodel \
+--out_proto=deploy.prototxt
 
 '''
 if __name__ == '__main__':
@@ -226,5 +228,6 @@ if __name__ == '__main__':
     train_model = args.train_model
     weights = args.weights
     out_name = args.out_name
+    out_proto = args.out_proto
 
-    run(out_dir, train_model, weights, out_name)
+    run(out_dir, train_model, weights, out_name, out_proto)
