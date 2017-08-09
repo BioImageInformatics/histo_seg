@@ -74,7 +74,6 @@ def activations_to_hwd(ndarr):
 
 
 
-
 def run_net(net, img, rotate=False, layer='conv_classifier'):
     activations = []
     batchsize = net.blobs['data'].shape[0]
@@ -262,6 +261,7 @@ def process_svs(svs, prob_maps, coordinates, settings):
                     placeholder[in_out==0] /= 2
                     pmap_scale[row:row+place_size, col:col+place_size, :] = placeholder
                 else:
+                    ## We haven't placed any part of this tile; place in the whole thing.
                     pmap_scale[row:row+place_size, col:col+place_size, :] = tile
                 #/end if
                 processed[row:row+place_size, col:col+place_size] = True

@@ -165,7 +165,7 @@ def make_parser():
     return p
 
 
-def run(out_dir, train_model, weights, out_name):
+def run(out_dir, train_model, weights, out_name, out_proto):
     caffe.set_mode_gpu()
     #p = make_parser()
     #args = p.parse_args()
@@ -193,6 +193,7 @@ def run(out_dir, train_model, weights, out_name):
     # train_size = 10000
     # minibatch_size = 8
     num_iterations = train_size // minibatch_size + train_size % minibatch_size
+    # num_iterations = min(5000, num_iterations)
 
     # in_h, in_w =(360, 480)
     in_h = 256
