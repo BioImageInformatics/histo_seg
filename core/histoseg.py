@@ -81,7 +81,7 @@ def main(args):
     #/end if
     ramdisk = settings['ramdisk']
 
-    for key, value in settings.items():
+    for key, value in sorted(settings.items()):
         print '\t {}: {}'.format(key, value)
 
     ## Initialize the output file by recording the settings

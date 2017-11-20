@@ -31,9 +31,12 @@ def init_net(tfmodels_root, tf_snapshot, sess, gpumode=True):
     print 'Starting network'
     net = tfmodels.VGGInference(sess=sess,
         n_classes=4,
+        # conv_kernels=[32, 64, 128, 256],
+        # deconv_kernels=[64, 128],
         conv_kernels=[32, 64, 64, 128],
         deconv_kernels=[64, 64],
         x_dims=[256, 256, 3],)
+    net.print_info()
 
     try:
         print 'Restoring..'
@@ -240,8 +243,9 @@ def process_svs(svs, prob_maps, coordinates, sess, settings):
             # tiles = [cv2.cvtColor(tile, cv2.COLOR_RGB2GRAY) for tile in tiles]
             cnn_start = time.time()
             # tiles = [run_net(net, tile, rotate=rotate, layer=cnnlayer) for tile in tiles]
+            tiles = [np.expand_dims(tile, 0) for tile in tiles]
             tiles = [tile/255.0 for tile in tiles]
-            tiles = [net.inference(np.expand_dims(tile, 0)) for tile in tiles]
+            tiles = [net.inference(tile) for tile in tiles]
             tiles = [np.squeeze(tile) for tile in tiles]
             print 'CNN finished in {:3.3f}s'.format(time.time() - cnn_start)
 

@@ -64,7 +64,7 @@ def read_region(svs, x, y, level, size, verbose=False):
     img = svs.read_region((x,y), level, size)
     img = np.array(img)
     img = cv2.cvtColor(img, cv2.COLOR_RGBA2RGB)
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB) ## This actually needs to be here
+    # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB) ## This actually needs to be here
     return img
 #/end read_region
 
