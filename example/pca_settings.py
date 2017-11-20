@@ -22,7 +22,7 @@ settings = {
     'replace_value':    3,
     'colors':           np.array([[235, 40, 40], [40, 235, 40], [40, 40, 245], [0, 0, 0]]),
     'proc_size':        256,
-    'scales':           ['10x'],
+    'scales':           ['5x'],
     'scale_weights':    [1],
     'overlap':          64,
 ## Stuff for the loading and saving
@@ -35,13 +35,14 @@ settings = {
     'deploy_proto':     '/home/nathan/histo-seg/semantic-pca/code/segnet_basic_deploy.prototxt',
 ## Tensorflow code, snapshots
     'tfmodel_root':     '/home/nathan',
-    'tf_snapshot':      '/home/nathan/tfmodels/experiments/pca256/snapshots/vgg_segmentation.ckpt-20750',
+    # 'tf_snapshot':      '/home/nathan/tfmodels/experiments/pca256/snapshots/vgg_segmentation.ckpt-20750',
+    'tf_snapshot':      '/home/nathan/tfmodels/experiments/pca128/snapshots/vgg_segmentation.ckpt-148250',
 ## Options
     'rotate':           False,
     'do_post_processing': False,
     'gpumode':          True,
     'cnnlayer':         'prob',
-    'do_normalize':     False,
+    'do_normalize':     True,
     'output_filenames': ['probability', 'argmax', 'argmaxRGB', 'overlay', 'tissue'],
     'prefetch':         1000,
     'DEBUGGING':        False,

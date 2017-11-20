@@ -14,134 +14,10 @@ sys.path.insert(0, module_dir)
 import data_utils
 import colorNormalization as cnorm
 
-'''
-Set up tensorflow session, model, load snapshot
-'''
-def init_net(tfmodels_root, tf_snapshot, sess, gpumode=True):
-    sys.path.insert(0, tfmodels_root)
-    try:
-        import tfmodels
-        print 'Success loading tfmodels'
-    except Exception as e:
-        print e.__doc__
-        print e.message
-        print 'ERROR: Failed to load tfmodels from {} (is TensorFlow installed?)'.format(tfmodels_root)
-    #/end try
-
-    print 'Starting network'
-    net = tfmodels.VGGInference(sess=sess,
-        n_classes=4,
-        # conv_kernels=[32, 64, 128, 256],
-        # deconv_kernels=[64, 128],
-        conv_kernels=[32, 64, 64, 128],
-        deconv_kernels=[64, 64],
-        x_dims=[256, 256, 3],)
-    net.print_info()
-
-    try:
-        print 'Restoring..'
-        net.restore(tf_snapshot)
-        print 'Success!'
-    except:
-        print 'Failed to restore snapshot from {}'.format(tf_snapshot)
-
-    return net
-
-#/end init_net
 
 
 
-'''
-Assumes batchsize=1
-need to take care of 3-channel and 1-channel
-'''
-def img_to_caffe(img):
-    if len(img.shape) == 3:
-        _,_,d = img.shape
-        img = img.transpose((2,0,1))
-        # imagetiletmp_r1 = np.rollaxis(imagetiletmp_r1, -1, 0)
-        # img = np.rollaxis(img, -1, 0)
-        img = np.expand_dims(img, 0)
-    else:
-        d = 1
-        img = np.expand_dims(img, 0)
-        img = np.expand_dims(img, 0)
-    #/end if
-
-    return img
-#/end img_to_caffe
-
-'''
-For batchsize > 1
-Also need to take care of 3-channel and 1-channel
-
-What we need is the output to be: (h, w, n_class)
-'''
-def imgs_to_caffe_batch(imgs):
-    pass
-#/end imgs_to_caffe_batch
-
-
-
-''' This function instead of np.rollaxis or similar '''
-def activations_to_hwd(ndarr):
-    nd = ndarr.shape[0]
-    ndarr = np.split(ndarr, nd, 0) ## split along axis 0
-    ndarr = [np.squeeze(n) for n in ndarr] ## make 2D
-    ndarr = [np.expand_dims(n,2) for n in ndarr] ## make 3D (h,w,1)
-    return np.dstack(ndarr) ## stack 3D (h,w,nd)
-#/end activations_to_hwd
-
-
-
-def run_net(net, img, rotate=False, layer='conv_classifier'):
-    # activations = []
-    # batchsize = net.blobs['data'].shape[0]
-    # if rotate and batchsize == 1:
-    #     _ = net.forward(data=img_to_caffe(img))
-    #     activ = np.squeeze(net.blobs[layer].data)
-    #     activations.append(activations_to_hwd(activ))
-    #
-    #     for rot in range(1,4):
-    #         img_ = np.rot90(img, rot)
-    #         _ = net.forward(data=img_to_caffe(img_))
-    #         activ = np.squeeze(net.blobs[layer].data)
-    #         activ = activations_to_hwd(activ)
-    #         activ = np.rot90(activ, 4-rot)
-    #         activations.append( activ )
-    #     #/end for
-    #     # return np.prod(activations, axis=0)
-    #     return np.mean(activations, axis=0)
-    #
-    # elif rotate and batchsize == 4:
-    #     img_in = [img_to_caffe(np.rot90(img, rot)) for rot in range(4)]
-    #     # img_in = [img_to_caffe(img)]
-    #     # for rot in range(1,4):
-    #     #     img_in.append(img_to_caffe(np.rot90(img, rot)))
-    #     #/end for
-    #     _ = net.forward(data=np.concatenate(img_in, axis=0))  # (4,3,h,w)
-    #     activ = []
-    #     for k in range(4):
-    #         act = np.squeeze(net.blobs[layer].data)
-    #         act = activations_to_hwd(act)
-    #         activ.append(np.rot90(act, 4-k))
-    #     #/end for
-    #     # return np.prod(activations, axis=0)
-    #     return np.mean(activations, axis=0)
-    #
-    # elif not rotate and batchsize == 1:
-    # _ = net.forward(data=img_to_caffe(img))
-    activ = net.inference(img)
-    # activ = np.squeeze(net.blobs[layer].data)
-    return activations_to_hwd(activ)
-
-    # else:
-    #     raise ValueError('Rotate was specified, but batchsize was not 1 or 4')
-    #/end if
-#/end run_net
-
-
-def process_svs(svs, prob_maps, coordinates, sess, settings):
+def process_svs(svs, prob_maps, coordinates, net, settings):
     # Check inputs
     overlap = settings['overlap']
     scales = settings['scales']
@@ -156,14 +32,10 @@ def process_svs(svs, prob_maps, coordinates, sess, settings):
     rotate = settings['rotate']
     caffe_root = settings['caffe_root']
 
-    tfmodel_root = settings['tfmodel_root']
-    tf_snapshot = settings['tf_snapshot']
-
     svs_info = {}
     svs_info = data_utils.pull_svs_stats(svs, svs_info)
     lvl20_index = svs_info['20x_lvl']
     mult_5x = svs_info['20x_to_5x']
-
 
     ## Loop over scales
     pmap_out = []
@@ -174,9 +46,6 @@ def process_svs(svs, prob_maps, coordinates, sess, settings):
         # for enforcing the border
         h,w = pmap_scale.shape[:2]
         processed = np.zeros((h,w), dtype=np.bool)
-
-        print 'Initializing model'
-        net = init_net(tfmodel_root, tf_snapshot, sess)
 
         print 'Processing {}'.format(scale)
         print 'Shuffling coordinates'
@@ -242,7 +111,6 @@ def process_svs(svs, prob_maps, coordinates, sess, settings):
             ## Processing here
             # tiles = [cv2.cvtColor(tile, cv2.COLOR_RGB2GRAY) for tile in tiles]
             cnn_start = time.time()
-            # tiles = [run_net(net, tile, rotate=rotate, layer=cnnlayer) for tile in tiles]
             tiles = [np.expand_dims(tile, 0) for tile in tiles]
             tiles = [tile/255.0 for tile in tiles]
             tiles = [net.inference(tile) for tile in tiles]
