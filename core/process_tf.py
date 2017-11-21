@@ -15,6 +15,16 @@ import data_utils
 import colorNormalization as cnorm
 
 
+def bayesian_inference(net, image, samples=25, keep_prob=0.5):
+    y_hat = net.inference(image, keep_prob=keep_prob)
+    y_hat = np.expand_dims(y_hat, -1) ## (h,w,d,1)
+
+    for _ in xrange(samples):
+        y_hat_p += net.inference(image, keep_prob=keep_prob)
+        y_hat = np.concatenate([y_hat, np.expand_dims(y_hat_p, -1)], -1)
+
+    y_bar = np.mean(y_hat, axis=-1)
+    return y_bar
 
 
 def process_svs(svs, prob_maps, coordinates, net, settings):
@@ -29,8 +39,13 @@ def process_svs(svs, prob_maps, coordinates, net, settings):
     prefetch = settings['prefetch']
     do_normalize = settings['do_normalize']
     debug_mode = settings['DEBUGGING']
-    rotate = settings['rotate']
-    caffe_root = settings['caffe_root']
+    bayesian = settings['bayesian']
+
+    ## Set the processing funciton up front to avoid if-else hell
+    if bayesian:
+        process_fn = lambda x: bayesian_inference(net, x)
+    else:
+        process_fn = lambda x: net.inference(x)
 
     svs_info = {}
     svs_info = data_utils.pull_svs_stats(svs, svs_info)
@@ -113,7 +128,7 @@ def process_svs(svs, prob_maps, coordinates, net, settings):
             cnn_start = time.time()
             tiles = [np.expand_dims(tile, 0) for tile in tiles]
             tiles = [tile/255.0 for tile in tiles]
-            tiles = [net.inference(tile) for tile in tiles]
+            tiles = [process_fn(tile) for tile in tiles]
             tiles = [np.squeeze(tile) for tile in tiles]
             print 'CNN finished in {:3.3f}s'.format(time.time() - cnn_start)
 
