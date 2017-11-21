@@ -47,7 +47,7 @@ def pull_svs_stats(svs, svs_info):
     return svs_info
 #/end pull_svs_stats
 
-def read_region(svs, x, y, level, size, verbose=False):
+def read_region(svs, x, y, level, size, flip_channels=False, verbose=False):
     # Utility function because openslide loads as RGBA
     if verbose:
         print 'Reading SVS: ({},{}), LEVEL {}, SIZE={}'.format(
@@ -64,7 +64,9 @@ def read_region(svs, x, y, level, size, verbose=False):
     img = svs.read_region((x,y), level, size)
     img = np.array(img)
     img = cv2.cvtColor(img, cv2.COLOR_RGBA2RGB)
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB) ## This actually needs to be here
+    if flip_channels:
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB) ## This actually needs to be here
+
     return img
 #/end read_region
 
@@ -99,7 +101,7 @@ def read_low_level(svs, verbose=False):
     #/end if
 
     img = read_region(svs, 0, 0, low_index,
-        svs.level_dimensions[low_index], verbose=verbose)
+        svs.level_dimensions[low_index], flip_channels=True, verbose=verbose)
     return img
 #/end read_low_level
 
