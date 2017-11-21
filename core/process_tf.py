@@ -98,6 +98,8 @@ def process_svs(svs, prob_maps, coordinates, net, settings):
             tiles = data_utils.preload_tiles(svs, coord_prefetch,
                     size=(load_size, load_size), level=lvl20_index)
             tiles = [cv2.resize(tile, dsize=(proc_size, proc_size)) for tile in tiles]
+            print '{} Tiles preloaded in {:3.3f}s'.format(
+                len(tiles), time.time() - preload_start),
 
             if do_normalize:
                 norm_start = time.time()
@@ -105,14 +107,11 @@ def process_svs(svs, prob_maps, coordinates, net, settings):
                 print 'Normalizing done in {}s'.format(time.time() - norm_start),
             #/end if
 
-            print '{} Tiles preloaded in {:3.3f}s'.format(
-                len(tiles), time.time() - preload_start),
-
             ## Processing here
             # tiles = [cv2.cvtColor(tile, cv2.COLOR_RGB2GRAY) for tile in tiles]
             cnn_start = time.time()
             tiles = [np.expand_dims(tile, 0) for tile in tiles]
-            tiles = [tile/255.0 for tile in tiles]
+            tiles = [tile*(2/255.0)-1 for tile in tiles] ## adjust input to [-1,1] for SELU activations
             tiles = [net.inference(tile) for tile in tiles]
             tiles = [np.squeeze(tile) for tile in tiles]
             print 'CNN finished in {:3.3f}s'.format(time.time() - cnn_start)

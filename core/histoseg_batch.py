@@ -84,11 +84,11 @@ def init_net(tfmodel_root, tf_snapshot, sess, gpumode=True):
     net = tfmodels.VGGInference(sess=sess,
         n_classes=4,
         ## 5x
-        conv_kernels=[32, 64, 128, 256],
-        deconv_kernels=[64, 128],
+        # conv_kernels=[32, 64, 128, 256],
+        # deconv_kernels=[64, 128],
         ## 10x
-        # conv_kernels=[32, 64, 64, 128],
-        # deconv_kernels=[64, 64],
+        conv_kernels=[32, 64, 64, 128],
+        deconv_kernels=[64, 64],
         x_dims=[256, 256, 3],)
     net.print_info()
 

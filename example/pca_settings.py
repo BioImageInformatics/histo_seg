@@ -35,8 +35,8 @@ settings = {
     'deploy_proto':     '/home/nathan/histo-seg/semantic-pca/code/segnet_basic_deploy.prototxt',
 ## Tensorflow code, snapshots
     'tfmodel_root':     '/home/nathan',
-    # 'tf_snapshot':      '/home/nathan/tfmodels/experiments/pca256/snapshots/vgg_segmentation.ckpt-20750',
-    'tf_snapshot':      '/home/nathan/tfmodels/experiments/pca128/snapshots/vgg_segmentation.ckpt-148250',
+    'tf_snapshot':      '/home/nathan/tfmodels/experiments/pca256/snapshots/vgg_segmentation.ckpt-7750',
+    # 'tf_snapshot':      '/home/nathan/tfmodels/experiments/pca128/snapshots/vgg_segmentation.ckpt-148250',
 ## Options
     'rotate':           False,
     'do_post_processing': False,
