@@ -39,6 +39,7 @@ settings = {
     # 'tf_snapshot':      '/home/nathan/tfmodels/experiments/pca128/snapshots/vgg_segmentation.ckpt-148250',
 ## Options
     'rotate':           False,
+    'bayesian':         False,
     'do_post_processing': False,
     'gpumode':          True,
     'cnnlayer':         'prob',
