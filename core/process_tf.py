@@ -57,17 +57,12 @@ def process_svs(svs, prob_maps, coordinates, net, settings):
 
     ## Loop over scales
     pmap_out = []
-    for coords, scale, weight in zip(
-        coordinates, scales, weights):
+    for coords, scale, weight in zip(coordinates, scales, weights):
         pmap_scale = np.copy(prob_maps)  ## use this line to enforce default class
-        # pmap_scale = np.zeros_like(prob_maps)
-        # for enforcing the border
         h,w = pmap_scale.shape[:2]
         processed = np.zeros((h,w), dtype=np.bool)
 
         print 'Processing {}'.format(scale)
-        print 'Shuffling coordinates'
-        random.shuffle(coords)
         print 'Using {} tile coordinates'.format(len(coords))
 
         if scale == '20x':
@@ -81,10 +76,6 @@ def process_svs(svs, prob_maps, coordinates, net, settings):
             place_mult = 0.25
         #/end if
 
-        ## A subset for speed
-        # indices = np.random.choice(range(len(coords)), 250)
-        # coords = [coords[index] for index in indices]
-        # print 'Subsetted {} coordinates '.format(len(coords))
 
         failed_count = 0
         load_size = proc_size = settings['proc_size']
@@ -92,37 +83,39 @@ def process_svs(svs, prob_maps, coordinates, net, settings):
         place_size = proc_size * place_mult
         place_size = int(place_size)
 
-        # print 'load_size:', load_size
-        # print 'place_size:', place_size
+        ## Leftover from debugging
+        # print 'Shuffling coordinates'
+        # random.shuffle(coords)
+        # indices = np.random.choice(range(len(coords)), 250)
+        # coords = [coords[index] for index in indices]
+        # print 'Subsetted {} coordinates '.format(len(coords))
 
         ## Divide the set into n chunks
         if len(coords) < prefetch:
             print 'Coordinates ({}) < prefetch ({})'.format(
-                len(coords), prefetch
-            )
+                len(coords), prefetch )
             coord_split = [coords]
             n_splits = 1
         else:
             n_splits = len(coords) / prefetch
             coord_split = np.array_split(coords, n_splits)
-        #/end if
 
         for nindx, coord_prefetch in enumerate(coord_split):
-            ## tile preloading
             print '[{:02d}/{:02d}]'.format(nindx, n_splits),
 
             preload_start = time.time()
-            # random.shuffle(coord_prefetch)
             tiles = data_utils.preload_tiles(svs, coord_prefetch,
                     size=(load_size, load_size), level=lvl20_index)
             tiles = [cv2.resize(tile, dsize=(proc_size, proc_size)) for tile in tiles]
+            preload_delta_t = time.time() - preload_start
             print '{} Tiles preloaded in {:3.3f}s'.format(
-                len(tiles), time.time() - preload_start),
+                len(tiles), preload_delta_t),
 
             if do_normalize:
                 norm_start = time.time()
                 tiles = [cnorm.normalize(tile) for tile in tiles]
-                print 'Normalizing done in {}s'.format(time.time() - norm_start),
+                norm_delta_t = time.time() - norm_start
+                print 'Normalizing done in {}s'.format(norm_delta_t),
             #/end if
 
             ## Processing here
@@ -132,7 +125,8 @@ def process_svs(svs, prob_maps, coordinates, net, settings):
             tiles = [tile*(2/255.0)-1 for tile in tiles] ## Recenter to [-1,1] for SELU activations
             tiles = [process_fn(tile) for tile in tiles]
             tiles = [np.squeeze(tile) for tile in tiles]
-            print 'CNN finished in {:3.3f}s'.format(time.time() - cnn_start)
+            cnn_delta_t = time.time() - cnn_start
+            print 'CNN finished in {:3.3f}s'.format(cnn_delta_t)
 
             # Resize to fit
             placing_start = time.time()
@@ -170,8 +164,6 @@ def process_svs(svs, prob_maps, coordinates, net, settings):
                     ## we've already placed some of this tile
                     placeholder[in_out] = tile[in_out]
                     tile_out = tile[in_out==0]
-                    # placeholder_out = placeholder[in_out==0]
-                    # border = np.mean([tile_out, placeholder_out])
 
                     ## Take a dirty average
                     placeholder[in_out==0] += tile_out
@@ -180,15 +172,10 @@ def process_svs(svs, prob_maps, coordinates, net, settings):
                 else:
                     ## We haven't placed any part of this tile; place in the whole thing.
                     pmap_scale[row:row+place_size, col:col+place_size, :] = tile
-                #/end if
                 processed[row:row+place_size, col:col+place_size] = True
-                # except:
-                #     print 'failed {} <-- {}'.format((row, col), tile.shape)
-                #     failed_count += 1
-                #/end try
-            #/end for tile, (row,col)
-        #/end for nindx, coord_prefetch
 
+        placing_delta_t = time.time() - placing_start
+        print 'Done placing tiles in {}s'.format(placing_delta_t)
         print 'Failed: {}'.format(failed_count)
 
         pmap_out.append(pmap_scale)

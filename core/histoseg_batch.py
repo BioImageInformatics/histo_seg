@@ -69,7 +69,6 @@ def init_net(settings, sess, gpumode=True):
 
     return net
 
-#/end init_net
 
 
 def main(args):
@@ -79,10 +78,10 @@ def main(args):
     assert os.path.exists(args.source_dir)
     with open(args.settings, 'r') as f:
         settings = pickle.load(f)
-    #/end with
+
     if args.output_dir:
         settings['output_dir'] = args.output_dir
-    #/end if
+
     ramdisk = settings['ramdisk']
 
     slide_list = sorted(glob.glob(os.path.join(
@@ -90,7 +89,7 @@ def main(args):
     assert len(slide_list) >= 1
 
     for key, value in sorted(settings.items()):
-        print '\t {}: {}'.format(key, value)
+        print '|\t {}: {}'.format(key, value)
 
     ## Initialize the output file by recording the settings
     # for key in settings.iterkeys():
@@ -130,12 +129,15 @@ def main(args):
             data_utils.save_result([prob_combo, prediction, prediction_rgb, overlay, 1-background],
                 svsbase, settings)
         except Exception as e:
+            print 'Removing {}'.format(svs_ramdisk)
+            data_utils.delete_from_ramdisk(svs_ramdisk)
             print e.__doc__
             print e.message
-
-        print 'Removing {}'.format(svs_ramdisk)
-        data_utils.delete_from_ramdisk(svs_ramdisk)
-    #/end for
+            raise e
+            
+        finally:
+            print 'Removing {}'.format(svs_ramdisk)
+            data_utils.delete_from_ramdisk(svs_ramdisk)
 
     print 'Closing session'
     sess.close()

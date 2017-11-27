@@ -68,7 +68,6 @@ def read_region(svs, x, y, level, size, flip_channels=False, verbose=False):
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB) ## This actually needs to be here
 
     return img
-#/end read_region
 
 
 ''' Load up a bunch of tiles as an ndarray '''
@@ -79,17 +78,14 @@ def preload_tiles(svs, coords, level, size, as_ndarray=False, normalize=False):
     # For completeness. Moved normalize outside & after resize
     if normalize:
         tiles = [cnorm.normalize(tile) for tile in tiles]
-    #/end if
 
     # tiles = [cv2.resize(tile, dsize=(size,size)) for tile in tiles]
 
     if as_ndarray:
         tiles = [np.expand_dims(tile, axis=0) for tile in tiles]
         tiles = np.concatenate(tiles, axis=0)
-    #/end if
 
     return tiles
-#/end preload_tiles
 
 
 ''' Just a helper '''

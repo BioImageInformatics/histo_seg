@@ -35,7 +35,7 @@ settings = {
     'deploy_proto':     '/home/nathan/histo-seg/semantic-pca/code/segnet_basic_deploy.prototxt',
 ## Tensorflow code, snapshots
     'tfmodel_root':     '/home/nathan/tfmodels',
-    'tf_snapshot':      '/home/nathan/tfmodels/experiments/pca128segnet/snapshots/segnet.ckpt-4000',
+    'tf_snapshot':      '/home/nathan/tfmodels/experiments/pca128segnet/snapshots/segnet.ckpt-21000',
     # 'tf_snapshot':      '/home/nathan/tfmodels/experiments/pca128/snapshots/vgg_segmentation.ckpt-148250',
 ## Pull these from the model settings - unfortunately they must match exactly with the original settings
     'conv_kernels':     [64, 64, 128, 256],
@@ -48,17 +48,11 @@ settings = {
     'do_post_processing': False,
     'gpumode':          True,
     'cnnlayer':         'prob',
-    'do_normalize':     True,
+    'do_normalize':     False,
     'output_filenames': ['probability', 'argmax', 'argmaxRGB', 'overlay', 'tissue'],
     'prefetch':         1000,
     'DEBUGGING':        False,
 }
-
-### Assertions to check settings validity
-# assert len(settings['scales']) == len(settings['weights'])
-# assert len(settings['scales']) == len(settings['overlaps'])
-# assert n_classes == len(settings['class_names'])
-# assert n_classes == settings['colors'].shape[0]
 
 filename = 'example/segnet_tfmodels_5x_bayes.pkl'
 with open(filename, 'w') as f:
