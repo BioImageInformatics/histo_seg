@@ -40,12 +40,14 @@ def process_svs(svs, prob_maps, coordinates, net, settings):
     do_normalize = settings['do_normalize']
     debug_mode = settings['DEBUGGING']
     bayesian = settings['bayesian']
+    samples = settings['samples']
 
     ## Set the processing funciton up front to avoid if-else hell
     if bayesian:
-        process_fn = lambda x: bayesian_inference(net, x)
+        print 'Setting up for bayesian inference mode with {} samples'.format(samples)
+        process_fn = lambda x: net.bayesian_inference(x, samples=samples)
     else:
-        process_fn = lambda x: net.inference(x)
+        process_fn = lambda x: net.inference(x, keep_prob=1.0)
 
     svs_info = {}
     svs_info = data_utils.pull_svs_stats(svs, svs_info)
@@ -126,8 +128,8 @@ def process_svs(svs, prob_maps, coordinates, net, settings):
             # tiles = [cv2.cvtColor(tile, cv2.COLOR_RGB2GRAY) for tile in tiles]
             cnn_start = time.time()
             tiles = [np.expand_dims(tile, 0) for tile in tiles]
-            tiles = [tile*(2/255.0)-1 for tile in tiles] ## adjust input to [-1,1] for SELU activations
-            tiles = [net.inference(tile) for tile in tiles]
+            tiles = [tile*(2/255.0)-1 for tile in tiles] ## Recenter to [-1,1] for SELU activations
+            tiles = [process_fn(tile) for tile in tiles]
             tiles = [np.squeeze(tile) for tile in tiles]
             print 'CNN finished in {:3.3f}s'.format(time.time() - cnn_start)
 

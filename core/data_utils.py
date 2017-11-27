@@ -117,10 +117,8 @@ def transfer_to_ramdisk(filename, destination):
     except:
         print 'Failed to transfer {} to {}'.format(filename, newname)
         return 0
-    #/end try
 
     return newname
-#/end transfer_to_ramdisk
 
 ''' delete a file '''
 def delete_from_ramdisk(filename):
@@ -128,8 +126,6 @@ def delete_from_ramdisk(filename):
         os.remove(filename)
     except:
         return 0
-    #/end try
-#/end delete_from_ramdisk
 
 '''
 Return the basename
@@ -138,7 +134,6 @@ def svs_name(pathname):
     base = os.path.basename(pathname)
     a, ext = os.path.splitext(base)
     return a
-#/end svs_name
 
 
 '''
@@ -157,9 +152,10 @@ def save_result(imgs, svsbase, settings):
             print 'Saving {}'.format(filename_)
             cv2.imwrite(filename_, img)
         elif filename == 'probability':
-            print 'Writing probability npy {}'.format(img.shape)
-            filename_ = os.path.join(output_dir, svsbase+'_'+filename+'.npy')
-            np.save(filename_, img)
+            ## Uncomment to save full-res 3D stack
+            # print 'Writing probability npy {}'.format(img.shape)
+            # filename_ = os.path.join(output_dir, svsbase+'_'+filename+'.npy')
+            # np.save(filename_, img)
             print 'Writing probability jpg {}'.format(img.shape)
             filename_ = os.path.join(output_dir, svsbase+'_'+filename+'.jpg')
             cv2.imwrite(filename_, img*255/img.max())
@@ -177,7 +173,3 @@ def save_result(imgs, svsbase, settings):
         else:
             print 'Filename {} does not match a mode. Edit in settings'
             continue
-        #/end if
-
-    #/end for
-#/end save_result

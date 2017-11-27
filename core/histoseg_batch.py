@@ -1,43 +1,7 @@
 '''
-New version histoseg.py
-
-the old one was too big and complicated and all-round could be way better
-
-Data flows like this:
-
-x.svs --t(x)--> tiles --p(x)--> process --r(x)--> output.png
-
-t():
-input:
-    svs
-    tile params
-output:
-    coordinate list
-    blank output images
-
-p():
-input:
-    svs
-    coordinate list
-    tile params
-    blank output images
-output:
-    filled-in output prob_maps
-
-r():
-input:
-    prob_maps
-    processing params
-output:
-    smoothed output
-    proposal label image
-
-new things:
-    - to save space in the code, pickle the settings and use those
-
-
 tensorflow version:
-    November, 2017, TF 1.3.0
+    November, 2017, TF 1.4.0
+    - (requires tf.nn.selu and tf.contrib.nn.alpha_dropout)
 '''
 
 import argparse
@@ -69,7 +33,14 @@ def test(args):
 '''
 Set up tensorflow session, model, load snapshot
 '''
-def init_net(tfmodel_root, tf_snapshot, sess, gpumode=True):
+def init_net(settings, sess, gpumode=True):
+    tfmodel_root = settings['tfmodel_root']
+    tf_snapshot = settings['tf_snapshot']
+    conv_kernels = settings['conv_kernels']
+    deconv_kernels = settings['deconv_kernels']
+    k_size = settings['k_size']
+    x_dims = [settings['proc_size'], settings['proc_size'], 3]
+
     sys.path.insert(0, tfmodel_root)
     try:
         import tfmodels
@@ -78,24 +49,21 @@ def init_net(tfmodel_root, tf_snapshot, sess, gpumode=True):
         print e.__doc__
         print e.message
         print 'ERROR: Failed to load tfmodels from {} (is TensorFlow installed?)'.format(tfmodel_root)
+        raise e
     #/end try
 
     print 'Starting network'
-    net = tfmodels.VGGInference(sess=sess,
-        n_classes=4,
-        ## 5x
-        # conv_kernels=[32, 64, 128, 256],
-        # deconv_kernels=[64, 128],
-        ## 10x
-        conv_kernels=[32, 64, 64, 128],
-        deconv_kernels=[64, 64],
-        x_dims=[256, 256, 3],)
+    net = tfmodels.SegNetInference(sess=sess,
+        n_classes=settings['n_classes'],
+        conv_kernels=conv_kernels,
+        deconv_kernels=deconv_kernels,
+        k_size=k_size,
+        x_dims=x_dims)
     net.print_info()
 
     try:
         print 'Restoring..'
         net.restore(tf_snapshot)
-        print 'Success!'
     except:
         print 'Failed to restore snapshot from {}'.format(tf_snapshot)
 
@@ -133,9 +101,8 @@ def main(args):
     sess = tf.Session(config=config)
 
     ## set up TF
-    tfmodel_root = settings['tfmodel_root']
-    tf_snapshot = settings['tf_snapshot']
-    net = init_net(tfmodel_root, tf_snapshot, sess)
+    print 'Setting up network'
+    net = init_net(settings, sess)
 
     for slide in slide_list:
         svsbase = data_utils.svs_name(slide)

@@ -1,41 +1,5 @@
 '''
-New version histoseg.py
-
-the old one was too big and complicated and all-round could be way better
-
-Data flows like this:
-
-x.svs --t(x)--> tiles --p(x)--> process --r(x)--> output.png
-
-t():
-input:
-    svs
-    tile params
-output:
-    coordinate list
-    blank output images
-
-p():
-input:
-    svs
-    coordinate list
-    tile params
-    blank output images
-output:
-    filled-in output prob_maps
-
-r():
-input:
-    prob_maps
-    processing params
-output:
-    smoothed output
-    proposal label image
-
-new things:
-    - to save space in the code, pickle the settings and use those
-
-
+Single image -- use histoseg_batch instead
 tensorflow version:
     November, 2017, TF 1.3.0
 '''
