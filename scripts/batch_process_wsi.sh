@@ -3,7 +3,7 @@
 set -e
 
 ## New way - using histoseg_batch and tfmodels
-settings_file=example/segnet_tfmodels_5x_bayes.pkl
+settings_file=example/segnet_tfmodels_5x.pkl
 svs_dir=/home/nathan/data/pca_wsi
 
 echo $settings_file

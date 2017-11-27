@@ -47,6 +47,7 @@ def process_svs(svs, prob_maps, coordinates, net, settings):
         print 'Setting up for bayesian inference mode with {} samples'.format(samples)
         process_fn = lambda x: net.bayesian_inference(x, samples=samples)
     else:
+        print 'Using normal forward pass, set keep_prob=1.0'
         process_fn = lambda x: net.inference(x, keep_prob=1.0)
 
     svs_info = {}
