@@ -6,10 +6,6 @@ This repo was used for the SPIE Medical Imaging, Digital Pathology paper:
 bibtex
 ```
 
-Segmentation and semantic labelling using the [SegNet](http://mi.eng.cam.ac.uk/projects/segnet/) architecture ([github](https://github.com/alexgkendall/caffe-segnet)). An interesting post-processing layer implementing Conditional Random Fields ([CRFasRNN](https://github.com/torrvision/crfasrnn)) is optional. Note that these two architectures use layers unavailable in `caffe-master`. A merger of the two custom branches can be found ([here](https://github.com/nathanin/caffe-segnet-crf)).
-
-Other methods (e.g. FCN) that take in images and produce label matrices can be quickly substituted as an alternative.
-
 **November, 2017** Moved over to Tensorflow via `tfmodels` (LINK).
 
 
