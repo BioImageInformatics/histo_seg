@@ -13,12 +13,14 @@ Other methods (e.g. FCN) that take in images and produce label matrices can be q
 **November, 2017** Moved over to Tensorflow via `tfmodels` (LINK).
 
 
+![flow_overview]
+
+
 ### Example Use Cases
 1. prostate cancer growth patterns, from manual annotation
 2. clear cell renal cancer microenvironment, automatic transfer of Immunohistochemistry annotation
-3. lung adenocarcinoma growth patterns, with converted Full-Connected deconvolution layers; trained on whole tile examples.
-4. WSI Image-to-Image translation for H\&E to IHC or IF (in-progress)
-5. WSI feature distributions for hot-spot finding
+3. WSI Image-to-Image translation for H\&E to IHC or IF (in-progress)
+4. WSI feature distributions for hot-spot finding
 
 
 ## Workflow
@@ -65,3 +67,5 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 This package was developed with support from the BioImageInformatics Lab at Cedars Sinai Medical Center, Los Angeles, CA.
+
+[flow_overview]: assets/histoseg_overview.png
