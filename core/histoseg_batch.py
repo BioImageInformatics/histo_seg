@@ -51,21 +51,11 @@ def init_net(settings, sess, gpumode=True):
         'k_size':k_size, 'x_dims':x_dims}
 
     if tfmodel_name=='vgg':
-        # net = tfmodels.VGGInference(sess=sess,
-        #     n_classes=settings['n_classes'],
-        #     conv_kernels=conv_kernels,
-        #     deconv_kernels=deconv_kernels,
-        #     k_size=k_size,
-        #     x_dims=x_dims)
         net = tfmodels.VGGInference(**network_args)
     elif tfmodel_name=='segnet':
-        # net = tfmodels.SegNetInference(sess=sess,
-        #     n_classes=settings['n_classes'],
-        #     conv_kernels=conv_kernels,
-        #     deconv_kernels=deconv_kernels,
-        #     k_size=k_size,
-        #     x_dims=x_dims)
         net = tfmodels.SegNetInference(**network_args)
+    elif tfmodel_name=='resnet':
+        net = tfmodels.ResNetInference(**network_args)
 
     net.print_info()
 

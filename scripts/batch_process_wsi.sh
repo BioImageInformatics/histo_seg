@@ -3,14 +3,14 @@
 set -e
 
 ## New way - using histoseg_batch and tfmodels
-settings_file=example/segnet_tfmodels_10x.pkl
+settings_file=example/resnet_tfmodels_5x.pkl
 # svs_dir=/home/nathan/data/pca_wsi
 svs_dir=/media/nathan/DATA/histo-seg-data/slide_for_testing_SPIE_2017
 
 echo $settings_file
 echo $svs_dir
 
-python core/histoseg_batch.py --source_dir=$svs_dir --settings=$settings_file --random=5
+python core/histoseg_batch.py --source_dir=$svs_dir --settings=$settings_file
 
 
 ## Below is for single slide histoseg.py
