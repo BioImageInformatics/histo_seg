@@ -24,17 +24,26 @@ def bayesian_inference(net, image, samples=25, keep_prob=0.5):
         y_hat = np.concatenate([y_hat, np.expand_dims(y_hat_p, -1)], -1)
 
     y_bar = np.mean(y_hat, axis=-1)
-    return y_bar
+    y_hat_var = np.var(y_hat, axis=-1)
+    return y_bar, y_hat_var
+
+
+
+def place_tiles_into(tiles, in_img, coord_prefetch, overlap, ):
+
+    return in_img
+
+
 
 
 def process_svs(svs, prob_maps, coordinates, net, settings):
     # Check inputs
     overlap = settings['overlap']
     scales = settings['scales']
-    weights = settings['weights']
-    netproto = settings['deploy_proto']
+    # weights = settings['weights']
+    # netproto = settings['deploy_proto']
     gpumode = settings['gpumode']
-    cnnlayer = settings['cnnlayer']
+    # cnnlayer = settings['cnnlayer']
     n_classes = settings['n_classes']
     prefetch = settings['prefetch']
     do_normalize = settings['do_normalize']
@@ -57,7 +66,7 @@ def process_svs(svs, prob_maps, coordinates, net, settings):
 
     ## Loop over scales
     pmap_out = []
-    for coords, scale, weight in zip(coordinates, scales, weights):
+    for coords, scale in zip(coordinates, scales):
         pmap_scale = np.copy(prob_maps)  ## use this line to enforce default class
         h,w = pmap_scale.shape[:2]
         processed = np.zeros((h,w), dtype=np.bool)
@@ -101,21 +110,21 @@ def process_svs(svs, prob_maps, coordinates, net, settings):
             coord_split = np.array_split(coords, n_splits)
 
         for nindx, coord_prefetch in enumerate(coord_split):
-            print '[{:02d}/{:02d}]'.format(nindx, n_splits),
+            print '[{:02d}/{:02d}]'.format(nindx+1, n_splits),
 
             preload_start = time.time()
             tiles = data_utils.preload_tiles(svs, coord_prefetch,
                     size=(load_size, load_size), level=lvl20_index)
             tiles = [cv2.resize(tile, dsize=(proc_size, proc_size)) for tile in tiles]
             preload_delta_t = time.time() - preload_start
-            print '{} Tiles preloaded in {:3.3f}s'.format(
+            print '{} Tiles preloaded in {:03.3f}s'.format(
                 len(tiles), preload_delta_t),
 
             if do_normalize:
                 norm_start = time.time()
                 tiles = [cnorm.normalize(tile) for tile in tiles]
                 norm_delta_t = time.time() - norm_start
-                print 'Normalizing done in {}s'.format(norm_delta_t),
+                print 'Normalizing done in {:03.3f}s'.format(norm_delta_t),
             #/end if
 
             ## Processing here
@@ -126,28 +135,12 @@ def process_svs(svs, prob_maps, coordinates, net, settings):
             tiles = [process_fn(tile) for tile in tiles]
             tiles = [np.squeeze(tile) for tile in tiles]
             cnn_delta_t = time.time() - cnn_start
-            print 'CNN finished in {:3.3f}s'.format(cnn_delta_t)
+            print 'CNN finished in {:03.3f}s'.format(cnn_delta_t)
 
             # Resize to fit
             placing_start = time.time()
             tiles = [cv2.resize(tile, dsize=(place_size, place_size)) for tile in tiles]
             coord_prefetch = [(int(x * mult_5x), int(y * mult_5x)) for (x,y) in coord_prefetch]
-
-            # if overlap > 0:
-            #     ovp = int(overlap * mult_5x)
-            #     place_size_crop = place_size - ovp
-            #     bbox = [ovp,
-            #             place_size_crop,
-            #             ovp,
-            #             place_size_crop]
-            #     # print 'ovp:', ovp
-            #     # print 'bbox:', bbox
-            #     # place_size_crop -= ovp
-            #     # print 'place_size_crop:', place_size_crop
-            #
-            #     tiles = [tile[bbox[0]:bbox[1], bbox[2]:bbox[3], :] for tile in tiles]
-            #     tiles = [cv2.resize(tile, dsize=(place_size, place_size)) for tile in tiles]
-            # #/end if
 
             ## x, y are w.r.t. 20X
             if overlap < 1 and overlap > 0:
@@ -179,7 +172,5 @@ def process_svs(svs, prob_maps, coordinates, net, settings):
         print 'Failed: {}'.format(failed_count)
 
         pmap_out.append(pmap_scale)
-    #/end for coords, scale, overlap, weight
 
     return pmap_out
-#/end process_svs

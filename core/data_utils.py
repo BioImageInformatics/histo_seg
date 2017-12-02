@@ -99,7 +99,6 @@ def read_low_level(svs, verbose=False):
     img = read_region(svs, 0, 0, low_index,
         svs.level_dimensions[low_index], flip_channels=True, verbose=verbose)
     return img
-#/end read_low_level
 
 
 ''' copy file to ramdisk '''

@@ -1,14 +1,13 @@
-'''
+"""
 tensorflow version:
     November, 2017, TF 1.4.0
-    - (requires tf.nn.selu and tf.contrib.nn.alpha_dropout)
-'''
+    - (require tf.nn.selu and tf.contrib.nn.alpha_dropout)
+"""
 
 import argparse
 import cv2, sys, os, glob
 import cPickle as pickle
-import time
-
+import time, random
 
 module_dir, module_name = os.path.split(__file__)
 sys.path.insert(0, module_dir)
@@ -20,19 +19,12 @@ import data_utils
 
 try:
     import tensorflow as tf
+    assert tf.nn.selu
 except:
     print 'ERROR loading tensorflow'
 
 
 
-def test(args):
-    print 'Got slide: ', args.slide
-    print 'Got settings: ', args.settings
-#/end test
-
-'''
-Set up tensorflow session, model, load snapshot
-'''
 def init_net(settings, sess, gpumode=True):
     tfmodel_root = settings['tfmodel_root']
     tf_snapshot = settings['tf_snapshot']
@@ -40,6 +32,7 @@ def init_net(settings, sess, gpumode=True):
     deconv_kernels = settings['deconv_kernels']
     k_size = settings['k_size']
     x_dims = [settings['proc_size'], settings['proc_size'], 3]
+    tfmodel_name = settings['tfmodel_name']
 
     sys.path.insert(0, tfmodel_root)
     try:
@@ -53,13 +46,29 @@ def init_net(settings, sess, gpumode=True):
     #/end try
 
     print 'Starting network'
-    net = tfmodels.SegNetInference(sess=sess,
-        n_classes=settings['n_classes'],
-        conv_kernels=conv_kernels,
-        deconv_kernels=deconv_kernels,
-        k_size=k_size,
-        x_dims=x_dims)
+    network_args = {'sess':sess, 'n_classes':settings['n_classes'],
+        'conv_kernels':conv_kernels, 'deconv_kernels':deconv_kernels,
+        'k_size':k_size, 'x_dims':x_dims}
+
+    if tfmodel_name=='vgg':
+        # net = tfmodels.VGGInference(sess=sess,
+        #     n_classes=settings['n_classes'],
+        #     conv_kernels=conv_kernels,
+        #     deconv_kernels=deconv_kernels,
+        #     k_size=k_size,
+        #     x_dims=x_dims)
+        net = tfmodels.VGGInference(**network_args)
+    elif tfmodel_name=='segnet':
+        # net = tfmodels.SegNetInference(sess=sess,
+        #     n_classes=settings['n_classes'],
+        #     conv_kernels=conv_kernels,
+        #     deconv_kernels=deconv_kernels,
+        #     k_size=k_size,
+        #     x_dims=x_dims)
+        net = tfmodels.SegNetInference(**network_args)
+
     net.print_info()
+
 
     try:
         print 'Restoring..'
@@ -87,9 +96,20 @@ def main(args):
     slide_list = sorted(glob.glob(os.path.join(
         args.source_dir, '*.svs' )))
     assert len(slide_list) >= 1
+    if args.random:
+        print 'Randomizing slides'
+        random.shuffle(slide_list)
 
+        if args.random>0:
+            slide_list = slide_list[:args.random]
+
+        print 'Continuing with {} slides'.format(len(slide_list))
+
+
+    print '|---------------------------------- SETTINGS ----------------------'
     for key, value in sorted(settings.items()):
         print '|\t {}: {}'.format(key, value)
+    print '|---------------------------------- SETTINGS ----------------------'
 
     ## Initialize the output file by recording the settings
     # for key in settings.iterkeys():
@@ -133,8 +153,7 @@ def main(args):
             data_utils.delete_from_ramdisk(svs_ramdisk)
             print e.__doc__
             print e.message
-            raise e
-            
+
         finally:
             print 'Removing {}'.format(svs_ramdisk)
             data_utils.delete_from_ramdisk(svs_ramdisk)
@@ -149,8 +168,8 @@ if __name__ == '__main__':
     p.add_argument('--source_dir')
     p.add_argument('--settings')
     p.add_argument('--output_dir')
+    p.add_argument('--random', type=int)
 
     args = p.parse_args()
 
     main(args)
-    # test(args)

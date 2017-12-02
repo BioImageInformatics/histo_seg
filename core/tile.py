@@ -12,7 +12,11 @@ module_dir, module_name = os.path.split(__file__)
 sys.path.insert(0, module_dir)
 import data_utils
 
-from matplotlib import pyplot as plt
+
+## Check opencv-python version
+assert cv2.__version__[0] == '3'
+
+# from matplotlib import pyplot as plt
 
 '''
 We need something like this to deal with slides scanned at differing resolutions
@@ -75,10 +79,14 @@ def imfill(img):
     # https://www.learnopencv.com/filling-holes-in-an-image-using-opencv-python-c/
 
     # open cv contours
-    cnts, _ = cv2.findContours(img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    ## TODO hard code area threshold
+    print 'finding contours... ',
+    _, cnts, _ = cv2.findContours(img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    print 'found {} contours'.format(len(cnts))
+
+    print 'removing small regions'
     hulls = [cv2.convexHull(cnt) for cnt in cnts if cv2.contourArea(cnt) > 2000]
     img2 = np.zeros_like(img)
+
     cv2.drawContours(img2, hulls, -1, (1), -1)
 
     return img2 > 0
@@ -86,14 +94,19 @@ def imfill(img):
 
 
 def preprocessing(svs):
+    print 'reading low level image'
     img = data_utils.read_low_level(svs)
 
     # Boolean image of white areas
+    print 'whitespace'
     whitemap = whitespace(img, mode='thresh')
+
+    print 'filling gaps'
     whitemap_filled = imfill(whitemap)
 
 
     ## Really shouldn't need this
+    print 'casting to uint8'
     if whitemap_filled.dtype == 'bool':
         process_map = whitemap_filled.astype(np.uint8)
     elif whitemap_filled.dtype == 'uint8':
@@ -206,7 +219,6 @@ def get_coordinates(svs, foreground, settings):
         mults.append(mult)
     #/end for
     return coordinates, mults
-#/end get_coordinates
 
 
 '''
@@ -215,14 +227,16 @@ take in an svs file and settings,
 return a list of coordinates according to the tile size, and overlap
 '''
 def tile_svs(svs, settings):
+    print 'preprocessing foreground'
     foreground, original_foreground = preprocessing(svs)
     # background = cv2.bitwise_not(foreground)
     background = 1 - foreground
 
     # probability images are at 5x
+    print 'initializing probability map output'
     prob_maps = init_outputs(foreground, settings['n_classes'], settings['replace_value'])
-    print 'Scanning for foreground tiles'
-    # coordinates, coordinates_low = get_coordinates(svs, foreground, svs_info, settings)
+
+    print 'Scanning for foreground tiles... ',
     coordinates, _ = get_coordinates(svs, foreground, settings)
     print 'Found {} foreground candidates'.format(len(coordinates[0]))
 
