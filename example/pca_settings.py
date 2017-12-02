@@ -11,7 +11,7 @@ settings = {
     'proc_size':        256,
     'scales':           ['5x'],
     'scale_weights':    [1],
-    'overlap':          32,
+    'overlap':          64,
 ## Stuff for the loading and saving
     'output_dir':       '/home/nathan/histo-seg/semantic-pca/tensorflow/resnet',
     'ramdisk':          '/dev/shm',
@@ -23,7 +23,9 @@ settings = {
     # 'cnnlayer':         'prob',
 ## Tensorflow code, snapshots
     'tfmodel_root':     '/home/nathan/tfmodels',
-    'tf_snapshot':      '/home/nathan/tfmodels/experiments/pca64resnet/snapshots/resnet.ckpt-40000',
+    'tf_snapshot':      '/home/nathan/tfmodels/experiments/pca128resnet/snapshots/resnet.ckpt-60000',
+    #'tfmodel_root':     '/Users/nathaning/_projects/tfmodels',
+    #'tf_snapshot':      '/Users/nathaning/_projects/tfmodels/experiments/pca128resnet/snapshots/resnet.ckpt-50000',
     'tfmodel_name':     'resnet',
     # 'tf_snapshot':      '/home/nathan/tfmodels/experiments/pca128/snapshots/vgg_segmentation.ckpt-148250',
 ## Pull these from the model settings - unfortunately they must match exactly with the original settings
@@ -36,9 +38,10 @@ settings = {
     'samples':          8,
     'do_post_processing': False,
     'gpumode':          True,
-    'do_normalize':     False,
-    'output_filenames': ['probability', 'argmax', 'argmaxRGB', 'overlay', 'tissue'],
-    'prefetch':         1000,
+    'do_normalize':     True,
+    # 'output_filenames': ['probability', 'argmax', 'argmaxRGB', 'overlay', 'tissue'],
+    'output_filenames': ['probability', 'argmax', 'argmaxRGB', 'overlay', 'tissue', 'variance'],
+    'prefetch':         500,
     'DEBUGGING':        False,
 }
 

@@ -165,6 +165,11 @@ def save_result(imgs, svsbase, settings):
             filename_ = os.path.join(output_dir, svsbase+'_'+filename+ext)
             print 'Saving {}'.format(filename_)
             cv2.imwrite(filename_, img)
+        elif filename == 'variance':
+            ext = '.jpg'
+            filename_ = os.path.join(output_dir, svsbase+'_'+filename+ext)
+            print 'Saving {}'.format(filename_)
+            cv2.imwrite(filename_, img)
         else:
             print 'Filename {} does not match a mode. Edit in settings'
             continue
