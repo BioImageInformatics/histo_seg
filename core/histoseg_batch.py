@@ -12,7 +12,9 @@ import time, random
 module_dir, module_name = os.path.split(__file__)
 sys.path.insert(0, module_dir)
 import tile
+import process
 import process_tf
+import process_tf_bayesian
 import reconstruct
 import data_utils
 
@@ -51,24 +53,13 @@ def init_net(settings, sess, gpumode=True):
         'k_size':k_size, 'x_dims':x_dims}
 
     if tfmodel_name=='vgg':
-        # net = tfmodels.VGGInference(sess=sess,
-        #     n_classes=settings['n_classes'],
-        #     conv_kernels=conv_kernels,
-        #     deconv_kernels=deconv_kernels,
-        #     k_size=k_size,
-        #     x_dims=x_dims)
         net = tfmodels.VGGInference(**network_args)
     elif tfmodel_name=='segnet':
-        # net = tfmodels.SegNetInference(sess=sess,
-        #     n_classes=settings['n_classes'],
-        #     conv_kernels=conv_kernels,
-        #     deconv_kernels=deconv_kernels,
-        #     k_size=k_size,
-        #     x_dims=x_dims)
         net = tfmodels.SegNetInference(**network_args)
+    elif tfmodel_name=='resnet':
+        net = tfmodels.ResNetInference(**network_args)
 
     net.print_info()
-
 
     try:
         print 'Restoring..'
@@ -91,7 +82,8 @@ def main(args):
     if args.output_dir:
         settings['output_dir'] = args.output_dir
 
-    ramdisk = settings['ramdisk']
+    if settings['ramdisk']:
+        ramdisk = settings['ramdisk']
 
     slide_list = sorted(glob.glob(os.path.join(
         args.source_dir, '*.svs' )))
@@ -114,6 +106,8 @@ def main(args):
     ## Initialize the output file by recording the settings
     # for key in settings.iterkeys():
     #     print '{}: {}'.format(key, settings[key])
+
+
     print 'Initializing TensorFlow Session'
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True
@@ -125,10 +119,14 @@ def main(args):
 
     for slide in slide_list:
         svsbase = data_utils.svs_name(slide)
-        svs_ramdisk = data_utils.transfer_to_ramdisk(slide, ramdisk)
+        if settings['ramdisk']:
+            svs_ramdisk = data_utils.transfer_to_ramdisk(slide, ramdisk)
 
         try:
-            svs = data_utils.open_slide(svs_ramdisk)
+            if settings['ramdisk']:
+                svs = data_utils.open_slide(svs_ramdisk)
+            else:
+                svs = data_utils.open_slide(slide)
 
             # start -- do tiling / preprocessing
             print 'Tiling'
@@ -138,7 +136,11 @@ def main(args):
             # keep going
             print 'Processing {}'.format(svsbase)
             process_start = time.time()
-            prob_maps = process_tf.process_svs(svs, prob_maps, coordinates, net, settings)
+            if settings['bayesian']:
+                prob_maps, var_maps = process_tf_bayesian.process_svs(svs, prob_maps, coordinates, net, settings)
+            else:
+                prob_maps = process_tf.process_svs(svs, prob_maps, coordinates, net, settings)
+
             print
             print '..done in {:3.3f}s'.format(time.time() - process_start)
             print
@@ -146,17 +148,28 @@ def main(args):
             # done?
             prob_combo, prediction, prediction_rgb, overlay = reconstruct.reconstruct(prob_maps,
                 svs, detailed_bcg, settings)
-            data_utils.save_result([prob_combo, prediction, prediction_rgb, overlay, 1-background],
+            if settings['bayesian']:
+                var_sum = reconstruct.reconstruct_variance(var_maps, detailed_bcg, settings)
+
+            if settings['bayesian']:
+                data_utils.save_result([prob_combo, prediction, prediction_rgb, overlay, 1-background, var_sum],
+                    svsbase, settings)
+            else:
+                data_utils.save_result([prob_combo, prediction, prediction_rgb, overlay, 1-background],
                 svsbase, settings)
+
+
         except Exception as e:
-            print 'Removing {}'.format(svs_ramdisk)
-            data_utils.delete_from_ramdisk(svs_ramdisk)
+            if settings['ramdisk']:
+                print 'Removing {}'.format(svs_ramdisk)
+                data_utils.delete_from_ramdisk(svs_ramdisk)
             print e.__doc__
             print e.message
 
         finally:
-            print 'Removing {}'.format(svs_ramdisk)
-            data_utils.delete_from_ramdisk(svs_ramdisk)
+            if settings['ramdisk']:
+                print 'Removing {}'.format(svs_ramdisk)
+                data_utils.delete_from_ramdisk(svs_ramdisk)
 
     print 'Closing session'
     sess.close()

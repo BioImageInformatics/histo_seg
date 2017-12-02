@@ -58,22 +58,6 @@ def impose_overlay(label, target, colors):
 
     # return output[:,:,::-1], label
     return output, label
-#/end impose_overlay
-
-
-# def impose_overlay(label, target):
-#     if label.shape[-1] > 3:
-#         label = label[:,:,:3]
-#     #/end if
-#
-#     label = label[:,:,::-1]
-#     output = target*0.6 + label*0.4
-#
-#     output = cv2.convertScaleAbs(output)
-#     # return output[:,:,::-1], label
-#     return output
-#
-# #/end impose_overlay
 
 def filter_probability(probs, thresh=0.5, layers=[0,1]):
     probs_ = np.copy(probs)
@@ -90,7 +74,6 @@ Take prob_maps, a list of nd-array floats
 return a combined nd-array the same shape as prob_maps[0]
 and the argmax mask
 and false colored H&E
-
 '''
 def reconstruct(prob_maps, svs, background, settings):
     scales = settings['scales']
@@ -99,7 +82,7 @@ def reconstruct(prob_maps, svs, background, settings):
     replace_value = settings['replace_value']
     do_post_processing = settings['do_post_processing']
 
-    print 'Reconstructing from {} scales'.format(len(scales))
+    print 'Reconstructing predictions from {} scales'.format(len(scales))
 
     if do_post_processing:
         print 'Applying openings'
@@ -125,4 +108,29 @@ def reconstruct(prob_maps, svs, background, settings):
     overlay, prob_max_color = impose_overlay(prob_max, overlay, colors)
 
     return prob_map, prob_max, prob_max_color, overlay
-#/end reconstruct
+
+def reconstruct_variance(var_maps, background, settings):
+    scales = settings['scales']
+    scale_weights = settings['scale_weights']
+    colors = settings['colors']
+    replace_value = settings['replace_value']
+    do_post_processing = settings['do_post_processing']
+
+    print 'Reconstructing variances from {} scales'.format(len(scales))
+
+    var_map = np.mean(var_maps, axis=0)
+
+    # prob_map = filter_probability(prob_map)
+
+    # prob_map = np.mean(prob_maps, axis=0)
+
+    var_total = np.sum(var_map, axis=2)
+    # if background.dtype is not 'bool':
+    #     background = background.astype(np.bool)
+    # var_total[background] = 0
+
+    # Overlay an H&E
+    # overlay = data_utils.read_low_level(svs)
+    # overlay, prob_max_color = impose_overlay(prob_max, overlay, colors)
+
+    return var_total

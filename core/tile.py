@@ -14,7 +14,7 @@ import data_utils
 
 
 ## Check opencv-python version
-assert cv2.__version__[0] == '3'
+# assert cv2.__version__[0] == '3'
 
 # from matplotlib import pyplot as plt
 
@@ -80,7 +80,10 @@ def imfill(img):
 
     # open cv contours
     print 'finding contours... ',
-    _, cnts, _ = cv2.findContours(img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    if cv2.__version__[0]=='3':
+        _, cnts, _ = cv2.findContours(img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    else:
+        cnts, _ = cv2.findContours(img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     print 'found {} contours'.format(len(cnts))
 
     print 'removing small regions'
