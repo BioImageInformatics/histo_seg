@@ -11,12 +11,10 @@ settings = {
     'proc_size':        256,
     'scales':           ['5x'],
     'scale_weights':    [1],
-    'overlap':          32,
+    'overlap':          64,
 ## Stuff for the loading and saving
-    # output_dir':       '/home/nathan/histo-seg/semantic-pca/tensorflow/segnet',
-    # 'ramdisk':          '/dev/shm',
-    'output_dir':       '/Users/nathaning/_projects/tfmodels/experiments/pca128resnet/inference',
-    'ramdisk':          0,
+    'output_dir':       '/home/nathan/histo-seg/semantic-pca/tensorflow/resnet',
+    'ramdisk':          '/dev/shm',
 ## Caffe root, prototxt and weight files
     # 'caffe_root':       '/home/nathan/caffe-segnet-crf/python',
     # 'weights':          ['/home/nathan/histo-seg/semantic-pca/weights/whole_set_512/batchnorm_segnet_basic_pca_250000.caffemodel',
@@ -24,10 +22,10 @@ settings = {
     # 'deploy_proto':     '/home/nathan/histo-seg/semantic-pca/code/segnet_basic_deploy.prototxt',
     # 'cnnlayer':         'prob',
 ## Tensorflow code, snapshots
-    # 'tfmodel_root':     '/home/nathan/tfmodels',
-    # 'tf_snapshot':      '/home/nathan/tfmodels/experiments/pca256segnet_a/snapshots/segnet.ckpt-24500',
-    'tfmodel_root':     '/Users/nathaning/_projects/tfmodels',
-    'tf_snapshot':      '/Users/nathaning/_projects/tfmodels/experiments/pca128resnet/snapshots/resnet.ckpt-50000',
+    'tfmodel_root':     '/home/nathan/tfmodels',
+    'tf_snapshot':      '/home/nathan/tfmodels/experiments/pca128resnet/snapshots/resnet.ckpt-100000',
+    #'tfmodel_root':     '/Users/nathaning/_projects/tfmodels',
+    #'tf_snapshot':      '/Users/nathaning/_projects/tfmodels/experiments/pca128resnet/snapshots/resnet.ckpt-50000',
     'tfmodel_name':     'resnet',
     # 'tf_snapshot':      '/home/nathan/tfmodels/experiments/pca128/snapshots/vgg_segmentation.ckpt-148250',
 ## Pull these from the model settings - unfortunately they must match exactly with the original settings
@@ -36,14 +34,19 @@ settings = {
     'k_size':           3,
 ## Options
     'rotate':           False,
+<<<<<<< HEAD
     'bayesian':         True,
     'samples':          4,
+=======
+    'bayesian':         False,
+    'samples':          32,
+>>>>>>> b7f4472d5cdd56665038b3d94b2c747c19a9226e
     'do_post_processing': False,
     'gpumode':          True,
     'do_normalize':     True,
-    # 'output_filenames': ['probability', 'argmax', 'argmaxRGB', 'overlay', 'tissue'],
-    'output_filenames': ['probability', 'argmax', 'argmaxRGB', 'overlay', 'tissue', 'variance'],
-    'prefetch':         200,
+    'output_filenames': ['probability', 'argmax', 'argmaxRGB', 'overlay', 'tissue'],
+    #'output_filenames': ['probability', 'argmax', 'argmaxRGB', 'overlay', 'tissue', 'variance'],
+    'prefetch':         500,
     'DEBUGGING':        False,
 }
 

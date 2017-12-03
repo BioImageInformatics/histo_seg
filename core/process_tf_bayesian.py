@@ -113,7 +113,8 @@ def process_svs(svs, prob_maps, coordinates, net, settings):
         pmap_scale = np.copy(prob_maps)  ## use this line to enforce default class
         varmap_scale = np.zeros_like(pmap_scale)
         h,w = pmap_scale.shape[:2]
-        processed = np.zeros((h,w), dtype=np.bool)
+        processed_mean = np.zeros((h,w), dtype=np.bool)
+        processed_vars = np.zeros((h,w), dtype=np.bool)
 
         print 'Processing {}'.format(scale)
         print 'Using {} tile coordinates'.format(len(coords))
@@ -174,10 +175,69 @@ def process_svs(svs, prob_maps, coordinates, net, settings):
 
             # Resize to fit
             placing_start = time.time()
-            pmap_scale = place_tiles_into(tile_means, pmap_scale, processed, place_size,
-                coord_prefetch, overlap, mult_5x)
-            varmap_scale = place_tiles_into(tile_vars, varmap_scale, processed, place_size,
-                coord_prefetch, overlap, mult_5x)
+            ## -------------------- place mean
+            # pmap_scale = place_tiles_into(tile_means, pmap_scale, processed, place_size, coord_prefetch, overlap, mult_5x)
+            tile_means = [np.squeeze(tile) for tile in tile_means]
+            tile_means = [cv2.resize(tile, dsize=(place_size, place_size)) for tile in tile_means]
+            coord_prefetch = [(int(x * mult_5x), int(y * mult_5x)) for (x,y) in coord_prefetch]
+#
+            ## x, y are w.r.t. 20X
+            if overlap < 1 and overlap > 0:
+                overlap = load_size * overlap
+            ovp = int(overlap * mult_5x)
+            inner = [ovp, place_size-ovp]
+            in_out = np.zeros((place_size, place_size), dtype=np.bool)
+            in_out[inner[0]:inner[1], inner[0]:inner[1]] = True
+            for tile, (row, col) in zip(tile_means, coord_prefetch):
+                # try:
+                placeholder = pmap_scale[row:row+place_size, col:col+place_size, :]
+                processed_pl = processed_mean[row:row+place_size, col:col+place_size]
+                if (processed_pl).sum() > 0:
+                    ## we've already placed some of this tile
+                    placeholder[in_out] = tile[in_out]
+                    tile_out = tile[in_out==0]
+#
+                    ## Take a dirty average
+                    placeholder[in_out==0] += tile_out
+                    placeholder[in_out==0] /= 2
+                    pmap_scale[row:row+place_size, col:col+place_size, :] = placeholder
+                else:
+                    ## We haven't placed any part of this tile; place in the whole thing.
+                    pmap_scale[row:row+place_size, col:col+place_size, :] = tile
+                processed_mean[row:row+place_size, col:col+place_size] = True
+
+            ## -------------------- place variance
+            # varmap_scale = place_tiles_into(tile_vars, varmap_scale, processed, place_size, coord_prefetch, overlap, mult_5x)
+            tile_vars = [np.squeeze(tile) for tile in tile_vars]
+            tile_vars = [cv2.resize(tile, dsize=(place_size, place_size)) for tile in tile_vars]
+            #coord_prefetch = [(int(x * mult_5x), int(y * mult_5x)) for (x,y) in coord_prefetch]
+#
+            ## x, y are w.r.t. 20X
+            #if overlap < 1 and overlap > 0:
+            #    overlap = load_size * overlap
+            #ovp = int(overlap * mult_5x)
+            inner = [ovp, place_size-ovp]
+            in_out = np.zeros((place_size, place_size), dtype=np.bool)
+            in_out[inner[0]:inner[1], inner[0]:inner[1]] = True
+            for tile, (row, col) in zip(tile_vars, coord_prefetch):
+                # try:
+                placeholder = varmap_scale[row:row+place_size, col:col+place_size, :]
+                processed_pl = processed_vars[row:row+place_size, col:col+place_size]
+                if (processed_pl).sum() > 0:
+                    ## we've already placed some of this tile
+                    placeholder[in_out] = tile[in_out]
+                    tile_out = tile[in_out==0]
+#
+                    ## Take a dirty average
+                    placeholder[in_out==0] += tile_out
+                    placeholder[in_out==0] /= 2
+                    varmap_scale[row:row+place_size, col:col+place_size, :] = placeholder
+                else:
+                    ## We haven't placed any part of this tile; place in the whole thing.
+                    varmap_scale[row:row+place_size, col:col+place_size, :] = tile
+                processed_vars[row:row+place_size, col:col+place_size] = True
+
+
             placing_delta_t = time.time() - placing_start
             print 'Done placing tiles in {}s'.format(placing_delta_t)
         print 'Failed: {}'.format(failed_count)

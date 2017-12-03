@@ -59,10 +59,10 @@ def place_tiles_into(tiles, in_img, processed, place_size, coord_prefetch, overl
             in_img[row:row+place_size, col:col+place_size, :] = tile
         processed[row:row+place_size, col:col+place_size] = True
 
-        return in_img
+        return np.copy(in_img), np.copy(processed)
 
 
-def get_load_place_size(scale, settings):
+def get_load_place_proc_size(scale, settings):
         if scale == '20x':
             mult = 1
             place_mult = 0.25**2
@@ -73,12 +73,11 @@ def get_load_place_size(scale, settings):
             mult = 4
             place_mult = 0.25
 
-        failed_count = 0
         load_size = proc_size = settings['proc_size']
         load_size *= mult
         place_size = int(proc_size * place_mult)
 
-        return load_size, place_size
+        return load_size, place_size, proc_size
 
 def process_svs(svs, prob_maps, coordinates, net, settings):
     # Check inputs
@@ -116,7 +115,8 @@ def process_svs(svs, prob_maps, coordinates, net, settings):
         print 'Processing {}'.format(scale)
         print 'Using {} tile coordinates'.format(len(coords))
 
-        load_size, place_size = get_load_place_size(scale, settings)
+        load_size, place_size, proc_size = get_load_place_proc_size(scale, settings)
+        failed_count = 0
 
         ## Leftover from debugging
         # print 'Shuffling coordinates'
@@ -165,37 +165,37 @@ def process_svs(svs, prob_maps, coordinates, net, settings):
             # Resize to fit
             placing_start = time.time()
 
-            pmap_scale = place_tiles_into(tiles, pmap_scale, processed, place_size,
-                coord_prefetch, overlap, mult_5x)
+            #def place_tiles_into(tiles, in_img, processed, place_size, coord_prefetch, overlap, mult_5x):
+            #pmap_scale, processed = place_tiles_into(tiles, pmap_scale, processed, place_size, coord_prefetch, overlap, mult_5x)
 
-            # tiles = [np.squeeze(tile) for tile in tiles]
-            # tiles = [cv2.resize(tile, dsize=(place_size, place_size)) for tile in tiles]
-            # coord_prefetch = [(int(x * mult_5x), int(y * mult_5x)) for (x,y) in coord_prefetch]
-            #
-            # ## x, y are w.r.t. 20X
-            # if overlap < 1 and overlap > 0:
-            #     overlap = load_size * overlap
-            # ovp = int(overlap * mult_5x)
-            # inner = [ovp, place_size-ovp]
-            # in_out = np.zeros((place_size, place_size), dtype=np.bool)
-            # in_out[inner[0]:inner[1], inner[0]:inner[1]] = True
-            # for tile, (row, col) in zip(tiles, coord_prefetch):
-            #     # try:
-            #     placeholder = pmap_scale[row:row+place_size, col:col+place_size, :]
-            #     processed_pl = processed[row:row+place_size, col:col+place_size]
-            #     if (processed_pl).sum() > 0:
-            #         ## we've already placed some of this tile
-            #         placeholder[in_out] = tile[in_out]
-            #         tile_out = tile[in_out==0]
-            #
-            #         ## Take a dirty average
-            #         placeholder[in_out==0] += tile_out
-            #         placeholder[in_out==0] /= 2
-            #         pmap_scale[row:row+place_size, col:col+place_size, :] = placeholder
-            #     else:
-            #         ## We haven't placed any part of this tile; place in the whole thing.
-            #         pmap_scale[row:row+place_size, col:col+place_size, :] = tile
-            #     processed[row:row+place_size, col:col+place_size] = True
+            tiles = [np.squeeze(tile) for tile in tiles]
+            tiles = [cv2.resize(tile, dsize=(place_size, place_size)) for tile in tiles]
+            coord_prefetch = [(int(x * mult_5x), int(y * mult_5x)) for (x,y) in coord_prefetch]
+#
+            ## x, y are w.r.t. 20X
+            if overlap < 1 and overlap > 0:
+                overlap = load_size * overlap
+            ovp = int(overlap * mult_5x)
+            inner = [ovp, place_size-ovp]
+            in_out = np.zeros((place_size, place_size), dtype=np.bool)
+            in_out[inner[0]:inner[1], inner[0]:inner[1]] = True
+            for tile, (row, col) in zip(tiles, coord_prefetch):
+                # try:
+                placeholder = pmap_scale[row:row+place_size, col:col+place_size, :]
+                processed_pl = processed[row:row+place_size, col:col+place_size]
+                if (processed_pl).sum() > 0:
+                    ## we've already placed some of this tile
+                    placeholder[in_out] = tile[in_out]
+                    tile_out = tile[in_out==0]
+#
+                    ## Take a dirty average
+                    placeholder[in_out==0] += tile_out
+                    placeholder[in_out==0] /= 2
+                    pmap_scale[row:row+place_size, col:col+place_size, :] = placeholder
+                else:
+                    ## We haven't placed any part of this tile; place in the whole thing.
+                    pmap_scale[row:row+place_size, col:col+place_size, :] = tile
+                processed[row:row+place_size, col:col+place_size] = True
 
             placing_delta_t = time.time() - placing_start
         print 'Done placing tiles in {}s'.format(placing_delta_t)

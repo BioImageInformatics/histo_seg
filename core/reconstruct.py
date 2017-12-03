@@ -118,13 +118,19 @@ def reconstruct_variance(var_maps, background, settings):
 
     print 'Reconstructing variances from {} scales'.format(len(scales))
 
+    print 'reconstruct var_maps', len(var_maps)
+    #print 'reconstruct var_maps', var_maps.shape, var_maps.dtype, var_maps.min(), var_maps.max()
     var_map = np.mean(var_maps, axis=0)
+    print 'reconstruct var_map', var_map.shape, var_map.dtype, var_map.min(), var_map.max()
 
     # prob_map = filter_probability(prob_map)
 
     # prob_map = np.mean(prob_maps, axis=0)
 
     var_total = np.sum(var_map, axis=2)
+    print 'reconstruct var_total', var_total.shape, var_total.dtype, var_total.min(), var_total.max()
+    var_total = cv2.convertScaleAbs(var_total*255)
+    print 'reconstruct var_total', var_total.shape, var_total.dtype, var_total.min(), var_total.max()
     # if background.dtype is not 'bool':
     #     background = background.astype(np.bool)
     # var_total[background] = 0
