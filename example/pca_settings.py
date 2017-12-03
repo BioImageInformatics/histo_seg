@@ -23,7 +23,7 @@ settings = {
     # 'cnnlayer':         'prob',
 ## Tensorflow code, snapshots
     'tfmodel_root':     '/home/nathan/tfmodels',
-    'tf_snapshot':      '/home/nathan/tfmodels/experiments/pca128resnet/snapshots/resnet.ckpt-60000',
+    'tf_snapshot':      '/home/nathan/tfmodels/experiments/pca128resnet/snapshots/resnet.ckpt-100000',
     #'tfmodel_root':     '/Users/nathaning/_projects/tfmodels',
     #'tf_snapshot':      '/Users/nathaning/_projects/tfmodels/experiments/pca128resnet/snapshots/resnet.ckpt-50000',
     'tfmodel_name':     'resnet',
@@ -35,12 +35,12 @@ settings = {
 ## Options
     'rotate':           False,
     'bayesian':         False,
-    'samples':          8,
+    'samples':          32,
     'do_post_processing': False,
     'gpumode':          True,
     'do_normalize':     True,
-    # 'output_filenames': ['probability', 'argmax', 'argmaxRGB', 'overlay', 'tissue'],
-    'output_filenames': ['probability', 'argmax', 'argmaxRGB', 'overlay', 'tissue', 'variance'],
+    'output_filenames': ['probability', 'argmax', 'argmaxRGB', 'overlay', 'tissue'],
+    #'output_filenames': ['probability', 'argmax', 'argmaxRGB', 'overlay', 'tissue', 'variance'],
     'prefetch':         500,
     'DEBUGGING':        False,
 }
