@@ -122,11 +122,12 @@ def process_svs(svs, prob_maps, coordinates, net, settings):
         failed_count = 0
 
         ## Leftover from debugging
-        print 'Shuffling coordinates'
-        random.shuffle(coords)
-        indices = np.random.choice(range(len(coords)), 250)
-        coords = [coords[index] for index in indices]
-        print 'Subsetted {} coordinates '.format(len(coords))
+        if settings['DEBUGGING']:
+            print 'Shuffling coordinates'
+            random.shuffle(coords)
+            indices = np.random.choice(range(len(coords)), 50)
+            coords = [coords[index] for index in indices]
+            print 'Subsetted {} coordinates '.format(len(coords))
 
         ## Divide the set into n chunks
         if len(coords) < prefetch:

@@ -37,7 +37,7 @@ settings = {
 ## Options
     'rotate':           False,
     'bayesian':         True,
-    'samples':          8,
+    'samples':          4,
     'do_post_processing': False,
     'gpumode':          True,
     'do_normalize':     True,
