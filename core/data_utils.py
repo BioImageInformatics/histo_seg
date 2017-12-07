@@ -139,37 +139,53 @@ def save_result(imgs, svsbase, settings):
     output_filenames = settings['output_filenames']
     n_classes = settings['n_classes']
 
-    assert len(imgs) == len(output_filenames)
+    # assert len(imgs) == len(output_filenames)
 
-    for img, filename in zip(imgs, output_filenames):
-        if 'argmax' in filename:
-            filename_ = os.path.join(output_dir, svsbase+'_'+filename+'.png')
-            print 'Saving {}'.format(filename_)
-            cv2.imwrite(filename_, img)
-        elif filename == 'probability':
-            ## Uncomment to save full-res 3D stack
-            # print 'Writing probability npy {}'.format(img.shape)
-            # filename_ = os.path.join(output_dir, svsbase+'_'+filename+'.npy')
-            # np.save(filename_, img)
-            print 'Writing probability jpg {}'.format(img.shape)
-            filename_ = os.path.join(output_dir, svsbase+'_'+filename+'.jpg')
-            cv2.imwrite(filename_, img*255/img.max())
-        elif filename == 'tissue':
-            ext = '.png'
-            mult = 255
-            filename_ = os.path.join(output_dir, svsbase+'_'+filename+ext)
-            print 'Saving {}'.format(filename_)
-            cv2.imwrite(filename_, img*mult)
-        elif filename == 'overlay':
-            ext = '.jpg'
-            filename_ = os.path.join(output_dir, svsbase+'_'+filename+ext)
-            print 'Saving {}'.format(filename_)
-            cv2.imwrite(filename_, img)
-        elif filename == 'variance':
-            ext = '.jpg'
-            filename_ = os.path.join(output_dir, svsbase+'_'+filename+ext)
-            print 'Saving {}'.format(filename_)
-            cv2.imwrite(filename_, img)
-        else:
-            print 'Filename {} does not match a mode. Edit in settings'
+    # 'output_filenames': ['probability',
+    #                      'argmax',
+    #                      'argmaxRGB',
+    #                      'overlayMAX',
+    #                      'overlaySMTH',
+    #                      'argmaxSMTH',
+    #                      'tissue'],
+    for filename in output_filenames:
+
+        try:
+            img = imgs[filename]
+            if 'argmax' in filename:
+                filename_ = os.path.join(output_dir, svsbase+'_'+filename+'.png')
+                print 'Saving {}'.format(filename_)
+                cv2.imwrite(filename_, img)
+            elif filename == 'probability':
+                ## Uncomment to save full-res 3D stack
+                # print 'Writing probability npy {}'.format(img.shape)
+                # filename_ = os.path.join(output_dir, svsbase+'_'+filename+'.npy')
+                # np.save(filename_, img)
+                print 'Writing probability jpg {}'.format(img.shape)
+                filename_ = os.path.join(output_dir, svsbase+'_'+filename+'.jpg')
+                cv2.imwrite(filename_, img*255/img.max())
+            elif filename == 'tissue':
+                ext = '.png'
+                mult = 255
+                filename_ = os.path.join(output_dir, svsbase+'_'+filename+ext)
+                print 'Saving {}'.format(filename_)
+                cv2.imwrite(filename_, img*mult)
+            elif 'overlay' in filename:
+                ext = '.jpg'
+                filename_ = os.path.join(output_dir, svsbase+'_'+filename+ext)
+                print 'Saving {}'.format(filename_)
+                cv2.imwrite(filename_, img)
+            elif filename == 'variance':
+                ext = '.jpg'
+                filename_ = os.path.join(output_dir, svsbase+'_'+filename+ext)
+                print 'Saving {}'.format(filename_)
+                cv2.imwrite(filename_, img)
+            else:
+                print 'Filename {} does not match a mode. Edit in settings'
+                continue
+
+        except Exception as e:
+            print e.message
+            print e.__doc__
+            print 'Error in save_result'
             continue

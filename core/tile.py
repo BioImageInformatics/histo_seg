@@ -203,6 +203,7 @@ def get_coordinates(svs, foreground, settings):
         #/end if
 
         lvl20size = proc_size * mult
+        ## Translate fractional overlap values to the size w.r.t. 20X
         if overlap < 1 and overlap > 0:
             overlap = lvl20size * overlap
 

@@ -1,19 +1,21 @@
 import cPickle as pickle
 import numpy as np
 
+## Defaults
 settings = {
 ## Stuff for the dataset
-    'title':            'resnet-tf',
+    'title':            'segnet-5x-tf',
     'n_classes':        4,
     'class_names':      ['LowGrade', 'HighGrade', 'Benign', 'Stroma'],
     'replace_value':    3,
     'colors':           np.array([[235, 40, 40], [40, 235, 40], [40, 40, 245], [0, 0, 0]]),
     'proc_size':        256,
-    'scales':           ['10x'],
+    'scales':           ['5x'],
     'scale_weights':    [1],
-    'overlap':          0,
+    # 'overlap':          64,
+    'overlap':          0.25,
 ## Stuff for the loading and saving
-    'output_dir':       '/home/nathan/histo-seg/semantic-pca/tensorflow/resnet10x',
+    'output_dir':       '/home/nathan/histo-seg/semantic-pca/tensorflow/segnet5x',
     'ramdisk':          '/dev/shm',
 ## Caffe root, prototxt and weight files
     # 'caffe_root':       '/home/nathan/caffe-segnet-crf/python',
@@ -23,29 +25,61 @@ settings = {
     # 'cnnlayer':         'prob',
 ## Tensorflow code, snapshots
     'tfmodel_root':     '/home/nathan/tfmodels',
-    'tf_snapshot':      '/home/nathan/tfmodels/experiments/pca256resnet/snapshots/resnet.ckpt-30000',
-    #'tfmodel_root':     '/Users/nathaning/_projects/tfmodels',
-    #'tf_snapshot':      '/Users/nathaning/_projects/tfmodels/experiments/pca128resnet/snapshots/resnet.ckpt-50000',
-    'tfmodel_name':     'resnet',
-    # 'tf_snapshot':      '/home/nathan/tfmodels/experiments/pca128/snapshots/vgg_segmentation.ckpt-148250',
+    'tf_snapshot':      '/home/nathan/tfmodels/experiments/pca128segnet_full/snapshots/segnet.ckpt-95000',
+    'tfmodel_name':     'segnet',
 ## Pull these from the model settings - unfortunately they must match exactly with the original settings
-    'conv_kernels':     [64, 128, 256],
-    'deconv_kernels':   [64, 128, 256],
+    'conv_kernels':     [64, 128, 256, 512, 512],
+    'deconv_kernels':   [64, 128, 256, 512, 512],
     'k_size':           3,
 ## Options
     'rotate':           False,
     'bayesian':         False,
-    'samples':          32,
+    'samples':          16,
     'do_post_processing': False,
     'gpumode':          True,
     'do_normalize':     True,
-    'output_filenames': ['probability', 'argmax', 'argmaxRGB', 'overlay', 'tissue'],
-    #'output_filenames': ['probability', 'argmax', 'argmaxRGB', 'overlay', 'tissue', 'variance'],
+    'output_filenames': ['probability',
+                         'argmax',
+                         'argmaxRGB',
+                         'overlayMAX',
+                         'overlaySMTH',
+                         'argmaxSMTH',
+                         'tissue'],
     'prefetch':         500,
     'DEBUGGING':        False,
 }
 
-filename = 'example/resnet_tfmodels_10x.pkl'
+updates = {
+    'title': 'segnet_5x_tf',
+    'scales': ['5x'],
+    'overlap': 0.25,
+    'output_dir': '/home/nathan/histo-seg/semantic-pca/tensorflow/segnet5x',
+    'tf_snapshot': '/home/nathan/tfmodels/experiments/pca10Xsegnet/snapshots/segnet.ckpt-95000',
+    'tfmodel_name':     'segnet',
+    'conv_kernels':     [64, 128, 256, 512, 512],
+    'deconv_kernels':   [64, 128, 256, 512, 512],
+    'k_size':           3,
+    'bayesian':         False,
+    'samples':          16,
+    'do_normalize':     True,
+    'prefetch':         500,
+## settings for resnets
+    'resnet_stacks':    5,
+    'resnet_kernels':   [64, 64, 64, 128],
+## Set true for debug mode
+    'DEBUGGING': False,
+}
+
+if updates['bayesian']:
+    print 'BAYESIAN MODE IS BROKEN PLEASE FIX'
+    # updates['output_filenames'] = ['probability', 'argmax', 'argmaxRGB', 'overlayMAX', 'tissue', 'variance']
+
+print 'Updating default settings:'
+for key, val in sorted(updates.items()):
+    print '\t {} --> {}'.format(key, val)
+
+settings.update(**updates)
+filename = 'example/{}.pkl'.format(settings['title'])
 with open(filename, 'w') as f:
     pickle.dump(settings, f)
 print filename
