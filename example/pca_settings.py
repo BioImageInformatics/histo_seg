@@ -34,13 +34,8 @@ settings = {
     'k_size':           3,
 ## Options
     'rotate':           False,
-<<<<<<< HEAD
-    'bayesian':         True,
-    'samples':          4,
-=======
     'bayesian':         False,
     'samples':          32,
->>>>>>> b7f4472d5cdd56665038b3d94b2c747c19a9226e
     'do_post_processing': False,
     'gpumode':          True,
     'do_normalize':     True,

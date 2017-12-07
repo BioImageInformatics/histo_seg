@@ -148,15 +148,16 @@ def main(args):
             # done?
             prob_combo, prediction, prediction_rgb, overlay = reconstruct.reconstruct(prob_maps,
                 svs, detailed_bcg, settings)
+            output_list = [prob_combo, prediction, prediction_rgb, overlay, 1-background]
             if settings['bayesian']:
                 var_sum = reconstruct.reconstruct_variance(var_maps, detailed_bcg, settings)
+                output_list.append(var_sum)
 
-            if settings['bayesian']:
-                data_utils.save_result([prob_combo, prediction, prediction_rgb, overlay, 1-background, var_sum],
-                    svsbase, settings)
-            else:
-                data_utils.save_result([prob_combo, prediction, prediction_rgb, overlay, 1-background],
-                svsbase, settings)
+            # if settings['bayesian']:
+            #     data_utils.save_result([prob_combo, prediction, prediction_rgb, overlay, 1-background, var_sum],
+            #         svsbase, settings)
+            # else:
+            data_utils.save_result(output_list, svsbase, settings)
 
 
         except Exception as e:

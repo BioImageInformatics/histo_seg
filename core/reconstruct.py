@@ -111,9 +111,6 @@ def reconstruct(prob_maps, svs, background, settings):
 
 def reconstruct_variance(var_maps, background, settings):
     scales = settings['scales']
-    scale_weights = settings['scale_weights']
-    colors = settings['colors']
-    replace_value = settings['replace_value']
     do_post_processing = settings['do_post_processing']
 
     print 'Reconstructing variances from {} scales'.format(len(scales))
@@ -123,14 +120,14 @@ def reconstruct_variance(var_maps, background, settings):
     var_map = np.mean(var_maps, axis=0)
     print 'reconstruct var_map', var_map.shape, var_map.dtype, var_map.min(), var_map.max()
 
-    # prob_map = filter_probability(prob_map)
-
-    # prob_map = np.mean(prob_maps, axis=0)
-
     var_total = np.sum(var_map, axis=2)
+    var_mean = np.mean(var_map, axis=2)
     print 'reconstruct var_total', var_total.shape, var_total.dtype, var_total.min(), var_total.max()
+    print 'reconstruct var_mean', var_mean.shape, var_mean.dtype, var_mean.min(), var_mean.max()
     var_total = cv2.convertScaleAbs(var_total*255)
-    print 'reconstruct var_total', var_total.shape, var_total.dtype, var_total.min(), var_total.max()
+    var_mean = cv2.convertScaleAbs(var_mean*255)
+    print 'reconstruct converted var_total', var_total.shape, var_total.dtype, var_total.min(), var_total.max()
+    print 'reconstruct converted var_mean', var_mean.shape, var_mean.dtype, var_mean.min(), var_mean.max()
     # if background.dtype is not 'bool':
     #     background = background.astype(np.bool)
     # var_total[background] = 0
@@ -139,4 +136,5 @@ def reconstruct_variance(var_maps, background, settings):
     # overlay = data_utils.read_low_level(svs)
     # overlay, prob_max_color = impose_overlay(prob_max, overlay, colors)
 
-    return var_total
+    # return var_total
+    return var_mean
