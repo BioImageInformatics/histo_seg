@@ -75,7 +75,7 @@ def filter_probability(probs, thresh=0.5, layers=[0,1]):
 """
 Take a single channel image and sliding window it to smooth the predictions
 """
-def sliding_window_smooth(img, window_size=64, stride=16):
+def sliding_window_smooth(img, window_size=64, stride=48):
     print 'Smoothing with sliding window, input image:', img.shape
     # print 'img', img.shape
     h_0, w_0 = img.shape[:2]
@@ -159,7 +159,7 @@ def reconstruct(prob_maps, svs, background, settings):
     ## Remove background
     print 'Replacing background '
     prob_max[background] = replace_value
-    # prob_smooth[background] = replace_value
+    prob_smooth[background] = replace_value
 
     # Overlay an H&E
     overlay_h_and_e = data_utils.read_low_level(svs)
