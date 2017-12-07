@@ -9,11 +9,11 @@ settings = {
     'replace_value':    3,
     'colors':           np.array([[235, 40, 40], [40, 235, 40], [40, 40, 245], [0, 0, 0]]),
     'proc_size':        256,
-    'scales':           ['5x'],
+    'scales':           ['10x'],
     'scale_weights':    [1],
-    'overlap':          64,
+    'overlap':          0,
 ## Stuff for the loading and saving
-    'output_dir':       '/home/nathan/histo-seg/semantic-pca/tensorflow/resnet',
+    'output_dir':       '/home/nathan/histo-seg/semantic-pca/tensorflow/resnet10x',
     'ramdisk':          '/dev/shm',
 ## Caffe root, prototxt and weight files
     # 'caffe_root':       '/home/nathan/caffe-segnet-crf/python',
@@ -23,7 +23,7 @@ settings = {
     # 'cnnlayer':         'prob',
 ## Tensorflow code, snapshots
     'tfmodel_root':     '/home/nathan/tfmodels',
-    'tf_snapshot':      '/home/nathan/tfmodels/experiments/pca128resnet/snapshots/resnet.ckpt-100000',
+    'tf_snapshot':      '/home/nathan/tfmodels/experiments/pca256resnet/snapshots/resnet.ckpt-30000',
     #'tfmodel_root':     '/Users/nathaning/_projects/tfmodels',
     #'tf_snapshot':      '/Users/nathaning/_projects/tfmodels/experiments/pca128resnet/snapshots/resnet.ckpt-50000',
     'tfmodel_name':     'resnet',
@@ -45,7 +45,7 @@ settings = {
     'DEBUGGING':        False,
 }
 
-filename = 'example/resnet_tfmodels_5x.pkl'
+filename = 'example/resnet_tfmodels_10x.pkl'
 with open(filename, 'w') as f:
     pickle.dump(settings, f)
 print filename
