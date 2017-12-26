@@ -50,7 +50,7 @@ def init_net(settings, sess, gpumode=True):
     print 'Starting network'
     network_args = {'sess':sess, 'n_classes':settings['n_classes'],
         'conv_kernels':conv_kernels, 'deconv_kernels':deconv_kernels,
-        'k_size':k_size, 'x_dims':x_dims}
+        'k_size':k_size, 'x_dims':x_dims, 'name': tfmodel_name}
 
     ## TODO fix this whole thing
     if tfmodel_name=='vgg':
@@ -62,16 +62,18 @@ def init_net(settings, sess, gpumode=True):
         network_args = {'sess':sess, 'n_classes':settings['n_classes'],
             'kernels': settings['resnet_kernels'],
             'stacks': settings['resnet_stacks'],
-            'k_size':k_size, 'x_dims':x_dims}
+            'k_size':k_size, 'x_dims':x_dims,
+            'name': tfmodel_name}
         net = tfmodels.ResNetInference(**network_args)
 
-    net.print_info()
+    # net.print_info()
 
     try:
         print 'Restoring..'
         net.restore(tf_snapshot)
     except:
         print 'Failed to restore snapshot from {}'.format(tf_snapshot)
+        return 0
 
     return net
 
@@ -165,7 +167,8 @@ def main(args):
             #     data_utils.save_result([prob_combo, prediction, prediction_rgb, overlay, 1-background, var_sum],
             #         svsbase, settings)
             # else:
-            data_utils.save_result(out_image_dict, svsbase, settings)
+            label_img = data_utils.read_label(svs)
+            data_utils.save_result(out_image_dict, label_img, svsbase, settings)
 
 
         except Exception as e:

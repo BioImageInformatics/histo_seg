@@ -1,4 +1,4 @@
-'''
+"""
 Color transfer of a reference LAB vector mean & standard deviation.
 
 E. Reinhard "Color transfer between images" <em>IEEE Comput. Graph. Appl.</em> vol. 21 no. 5 pp. 34-41 Sep./Oct. 2001.
@@ -7,7 +7,7 @@ image
     3-channel RGB space image
 target
     3x2 ndarray float64
-'''
+"""
 
 import numpy as np
 import cv2

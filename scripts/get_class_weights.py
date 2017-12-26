@@ -78,13 +78,13 @@ def main(*args):
             print towrite
             f.write(towrite + '\n')
 
-'''
+"""
 Get class weighting for masks in a folder. Also write out a file for record.
 
 Usage:
 python get_class_weights.py [path] [nclasses]
 python get_class_weights.py /path/to/png/ 4
-'''
+"""
 if __name__ == '__main__':
     if len(sys.argv) > 3 or len(sys.argv) < 2:
         print "get_class_weights.py takes exactly two arguments"

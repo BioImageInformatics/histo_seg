@@ -13,9 +13,7 @@ settings = {
     'scales':           ['5x'],
     'scale_weights':    [1],
     # 'overlap':          64,
-    'overlap':          0.25,
-## Stuff for the loading and saving
-    'output_dir':       '/home/nathan/histo-seg/semantic-pca/tensorflow/segnet5x',
+    'overlap':          0.1,
     'ramdisk':          '/dev/shm',
 ## Caffe root, prototxt and weight files
     # 'caffe_root':       '/home/nathan/caffe-segnet-crf/python',
@@ -50,19 +48,19 @@ settings = {
 }
 
 updates = {
-    'title': 'segnet_5x_tf',
-    'scales': ['5x'],
+    'title': 'resnet_10x_tf',
+    'scales': ['10x'],
     'overlap': 0.25,
-    'output_dir': '/home/nathan/histo-seg/semantic-pca/tensorflow/segnet5x',
-    'tf_snapshot': '/home/nathan/tfmodels/experiments/pca10Xsegnet/snapshots/segnet.ckpt-95000',
-    'tfmodel_name':     'segnet',
+    'output_dir': '/home/nathan/histo-seg/durham/resnet10x',
+    'tf_snapshot': '/home/nathan/tfmodels/experiments/pca10Xresnet/snapshots/resnet.ckpt-199000',
+    'tfmodel_name':     'resnet',
     'conv_kernels':     [64, 128, 256, 512, 512],
     'deconv_kernels':   [64, 128, 256, 512, 512],
     'k_size':           3,
     'bayesian':         False,
     'samples':          16,
-    'do_normalize':     True,
-    'prefetch':         500,
+    'prefetch':         250,
+    'proc_size':        386,
 ## settings for resnets
     'resnet_stacks':    5,
     'resnet_kernels':   [64, 64, 64, 128],
@@ -82,4 +80,4 @@ settings.update(**updates)
 filename = 'example/{}.pkl'.format(settings['title'])
 with open(filename, 'w') as f:
     pickle.dump(settings, f)
-print filename
+print 'Saving settings to:', filename

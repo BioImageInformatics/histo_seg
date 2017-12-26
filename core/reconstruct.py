@@ -1,10 +1,10 @@
-'''
+"""
 reconstruct.py
 
 not reconstructing from tiles this time
 . reconstructing proposals from probability maps
 
-'''
+"""
 import cv2
 import numpy as np
 import sys
@@ -16,10 +16,10 @@ module_dir, module_name = os.path.split(__file__)
 sys.path.insert(0, module_dir)
 import data_utils
 
-'''
+"""
 Take an (h,w,n) shaped image,
 apply some openings to each n
-'''
+"""
 def post_process(prob):
     n = prob.shape[2]
     kernel_cross = cv2.getStructuringElement(cv2.MORPH_CROSS,(3,3))
@@ -33,13 +33,13 @@ def post_process(prob):
 #/end post_process
 
 
-'''
+"""
 Take
 arg1: label image
 arg2: h&e image in rgb space
 
 return false colored rgb
-'''
+"""
 def impose_overlay(label, target, colors):
     r = np.zeros_like(label)
     g = np.zeros_like(label)
@@ -75,7 +75,7 @@ def filter_probability(probs, thresh=0.5, layers=[0,1]):
 """
 Take a single channel image and sliding window it to smooth the predictions
 """
-def sliding_window_smooth(img, window_size=64, stride=48):
+def sliding_window_smooth(img, window_size=32, stride=32):
     print 'Smoothing with sliding window, input image:', img.shape
     # print 'img', img.shape
     h_0, w_0 = img.shape[:2]
@@ -157,9 +157,9 @@ def reconstruct(prob_maps, svs, background, settings):
     print 'Prob_smooth image: ', prob_smooth.shape, np.unique(prob_smooth)
 
     ## Remove background
-    print 'Replacing background '
-    prob_max[background] = replace_value
-    prob_smooth[background] = replace_value
+    # print 'Replacing background '
+    # prob_max[background] = replace_value
+    # prob_smooth[background] = replace_value
 
     # Overlay an H&E
     overlay_h_and_e = data_utils.read_low_level(svs)
