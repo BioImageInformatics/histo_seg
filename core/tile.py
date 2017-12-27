@@ -1,6 +1,6 @@
-'''
+"""
 tile.py
-'''
+"""
 
 import cv2
 import os
@@ -18,7 +18,7 @@ import data_utils
 
 # from matplotlib import pyplot as plt
 
-'''
+"""
 We need something like this to deal with slides scanned at differing resolutions
 
 In particular we have 20x and 40x slides.
@@ -26,9 +26,9 @@ In particular we have 20x and 40x slides.
 The new way to think about it is the lowest dim will always be 5x.
 
 [(40x), 20x, 10x, 5x]
-'''
+"""
 
-def whitespace(img, mode='Otsu', white_pt=210):
+def whitespace(img, mode='Otsu', white_pt=220):
     if len(img.shape)==3:
         img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
     #/end if
@@ -67,9 +67,9 @@ def get_process_map(masks):
 #/end get_process_map
 
 
-'''
+"""
 https://www.learnopencv.com/filling-holes-in-an-image-using-opencv-python-c/
-'''
+"""
 def imfill(img):
     if img.dtype == 'bool':
         img = img.astype(np.uint8)
@@ -135,11 +135,11 @@ def nrow_ncol(svs_info, tilesize, overlap):
     return tile_top, overlap_top, nrow, ncol
 #/end nrow_ncol
 
-'''
+"""
 Should return float32 3D array (h,w,n_classes)
 
 Trying to set a default class here.. it's not working.
-'''
+"""
 def init_outputs(foreground, n_classes, default_class):
     h, w = foreground.shape[:2]
     prob_maps = []
@@ -157,12 +157,12 @@ def init_outputs(foreground, n_classes, default_class):
     return prob_maps
 #/end init_outputs
 
-'''
+"""
 this thing has to preserve the overall shape of the foreground area
 At this point foreground = 1 and background = 0
 
 important to keep that convention
-'''
+"""
 def downsample_foreground(foreground, x, y):
     fg = cv2.resize(foreground, dsize=(x, y), interpolation=cv2.INTER_NEAREST)
     # fg =
@@ -172,11 +172,11 @@ def downsample_foreground(foreground, x, y):
 
 
 
-'''
+"""
 return a list of coordinates we can use to
 1) read from the svs file
 2) place results into the prob_maps
-'''
+"""
 # def get_coordinates(svs, foreground, svs_info, settings):
 def get_coordinates(svs, foreground, settings):
     scales = settings['scales']
@@ -203,6 +203,7 @@ def get_coordinates(svs, foreground, settings):
         #/end if
 
         lvl20size = proc_size * mult
+        ## Translate fractional overlap values to the size w.r.t. 20X
         if overlap < 1 and overlap > 0:
             overlap = lvl20size * overlap
 
@@ -224,11 +225,11 @@ def get_coordinates(svs, foreground, settings):
     return coordinates, mults
 
 
-'''
+"""
 take in an svs file and settings,
 
 return a list of coordinates according to the tile size, and overlap
-'''
+"""
 def tile_svs(svs, settings):
     print 'preprocessing foreground'
     foreground, original_foreground = preprocessing(svs)

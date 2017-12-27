@@ -1,4 +1,4 @@
-'''
+"""
 This script is for creating datasets from labelled image-annotation pairs
 
 The assumption is the labels and annotations are named the same, with
@@ -21,7 +21,7 @@ Usage:
 $ python ~/histo-seg/core/data_pipeline.py 512 10 dataset_01
 
 
-'''
+"""
 
 
 # from openslide import OpenSlide
@@ -42,11 +42,11 @@ import colorNormalization as cnorm
 
 
 
-'''
+"""
 Utility from days gone by. Some annotations were appended with '_mask'
 This caused some problems. So i removed them.
 Pretty sure this is no longer in use, but...
-'''
+"""
 def remove_masktxt(path):
     contents = glob.glob(os.path.join(path, '*.png'))
     for c in contents:
@@ -59,7 +59,7 @@ def remove_masktxt(path):
 #/end remove_masktxt
 
 
-'''
+"""
 Another helper from the old days.
 We used to require a text file like:
 list.txt:
@@ -69,7 +69,7 @@ list.txt:
 Now that we can use LMDB to feed caffe, this isn't needed
 
 It's still nice to have
-'''
+"""
 def makelist(src, anno, dst):
     print 'creating list'
     # list out the matching ones
@@ -104,7 +104,7 @@ def makelist(src, anno, dst):
 
 
 
-'''
+"""
 For visualizing image-mask pairs
 
 Burns colors, defined in a look up table into the image
@@ -112,7 +112,7 @@ Burns colors, defined in a look up table into the image
 This uses that listfile, list.txt described above.
 
 I guess that's why I keep that function around.
-'''
+"""
 def impose_overlay(listfile, dst):
     if not os.path.exists(dst):
         os.mkdir(dst)
@@ -137,14 +137,14 @@ def impose_overlay(listfile, dst):
     #/end for
 #/end impose_overlay
 
-'''
+"""
 I guess this could be inside data_rotate
 
 I thought it might be useful to have outside since it's a
 pretty commonthing to do.
 
 eh.
-'''
+"""
 def rotate(img, rotation_matrix):
     img = cv2.warpAffine(src=img, M=rotation_matrix, dsize=(img.shape[0:2]),
         borderMode=cv2.BORDER_REPLICATE)
@@ -152,7 +152,7 @@ def rotate(img, rotation_matrix):
 #/end rotate
 
 
-'''
+"""
 FIXME! produces a 0-border for even sized images
 
 Reads images in img_dir and rotates them `iters` times by 90deg
@@ -161,7 +161,7 @@ I should probably infer the center for each image,
 but assume all of them are uniformly square.
 
 This function appends an 'r' to the filename each rotation.
-'''
+"""
 def data_rotate(img_dir, iters, ext='jpg', mode='3ch', writesize=256):
 
     center = (writesize / 2 - 1 , writesize / 2 - 1)
@@ -198,7 +198,7 @@ def data_rotate(img_dir, iters, ext='jpg', mode='3ch', writesize=256):
 
 
 
-'''
+"""
 Applies the color targets in `l_mean_range` and `l_std_range` to
 the images in img_dir, saving copies each time.
 
@@ -215,7 +215,7 @@ rewritten as-is, with the corresponding name appendage
 The function appends a 'c' to the filenames.
 
 # TODO make this use copy for masks
-'''
+"""
 def data_coloration(img_dir, mode, ext, default_only=False):
     # TODO replace with random  numbers generated from uniform distrib.
     # l_mean_range = (144.048, 130.22, 135.5, 140.0)
@@ -280,7 +280,7 @@ def data_coloration(img_dir, mode, ext, default_only=False):
 
 
 
-'''
+"""
 Returns the bounding box coordinates given height, width, and
 a window size ("edge").
 
@@ -295,7 +295,7 @@ that way we force the windows to shift around
 and also make it nice and random.
 
 TODO
-'''
+"""
 ## Moved from data.py 6-22-17
 def random_crop(h, w, edge):
     minx = 0
@@ -312,7 +312,7 @@ def random_crop(h, w, edge):
 
 
 
-'''
+"""
 Extracts n SQUARE sub-images from the images in img_list
 
 I should check that the requested edge length is legal for all the members
@@ -343,7 +343,7 @@ remains to be seen if this is useful
 input: 1,2,3 : output: 4
 input: 4,5,6,7,8 : output 9
 etc.
-'''
+"""
 def sub_img(img_list, ext, mode='3ch', edge=512, writesize=256, n=8, coords=0):
     # In contrast to split, do a random crop n times
 
@@ -425,7 +425,7 @@ def delete_list(imglist):
 
 
 
-'''
+"""
 Define a set of transformations, to be applied sequentially, to images.
 For each image, track it's annotation image and copy the relevant transformations.
 
@@ -434,7 +434,7 @@ This should work for any sort fo experiment where
 - similary named source images are contained in their own dir
 - we want them to be multiplied
 
-'''
+"""
 def multiply_data(src, anno, scales = [512], multiplicity = [9], do_color=True, do_rotate=True):
 
     #print '\nAffirm that files in\n>{} \nand \n>{} \nare not originals.\n'.format(

@@ -50,22 +50,30 @@ def init_net(settings, sess, gpumode=True):
     print 'Starting network'
     network_args = {'sess':sess, 'n_classes':settings['n_classes'],
         'conv_kernels':conv_kernels, 'deconv_kernels':deconv_kernels,
-        'k_size':k_size, 'x_dims':x_dims}
+        'k_size':k_size, 'x_dims':x_dims, 'name': tfmodel_name}
 
+    ## TODO fix this whole thing
     if tfmodel_name=='vgg':
         net = tfmodels.VGGInference(**network_args)
     elif tfmodel_name=='segnet':
         net = tfmodels.SegNetInference(**network_args)
     elif tfmodel_name=='resnet':
+        ## TODO fix this
+        network_args = {'sess':sess, 'n_classes':settings['n_classes'],
+            'kernels': settings['resnet_kernels'],
+            'stacks': settings['resnet_stacks'],
+            'k_size':k_size, 'x_dims':x_dims,
+            'name': tfmodel_name}
         net = tfmodels.ResNetInference(**network_args)
 
-    net.print_info()
+    # net.print_info()
 
     try:
         print 'Restoring..'
         net.restore(tf_snapshot)
     except:
         print 'Failed to restore snapshot from {}'.format(tf_snapshot)
+        return 0
 
     return net
 
@@ -136,28 +144,31 @@ def main(args):
             # keep going
             print 'Processing {}'.format(svsbase)
             process_start = time.time()
-            if settings['bayesian']:
-                prob_maps, var_maps = process_tf_bayesian.process_svs(svs, prob_maps, coordinates, net, settings)
-            else:
-                prob_maps = process_tf.process_svs(svs, prob_maps, coordinates, net, settings)
+            # if settings['bayesian']:
+            #     prob_maps, var_maps = process_tf_bayesian.process_svs(svs, prob_maps, coordinates, net, settings)
+            # else:
+            prob_maps = process_tf.process_svs(svs, prob_maps, coordinates, net, settings)
 
             print
             print '..done in {:3.3f}s'.format(time.time() - process_start)
             print
 
             # done?
-            prob_combo, prediction, prediction_rgb, overlay = reconstruct.reconstruct(prob_maps,
-                svs, detailed_bcg, settings)
-            output_list = [prob_combo, prediction, prediction_rgb, overlay, 1-background]
-            if settings['bayesian']:
-                var_sum = reconstruct.reconstruct_variance(var_maps, detailed_bcg, settings)
-                output_list.append(var_sum)
+            # prob_combo, prediction, prediction_rgb, overlay = reconstruct.reconstruct(prob_maps,
+                # svs, detailed_bcg, settings)
+
+            out_image_dict = reconstruct.reconstruct(prob_maps, svs, detailed_bcg, settings)
+            out_image_dict['tissue'] = 1-background
+
+            # if settings['bayesian']:
+            #     var_sum = reconstruct.reconstruct_variance(var_maps, detailed_bcg, settings)
 
             # if settings['bayesian']:
             #     data_utils.save_result([prob_combo, prediction, prediction_rgb, overlay, 1-background, var_sum],
             #         svsbase, settings)
             # else:
-            data_utils.save_result(output_list, svsbase, settings)
+            label_img = data_utils.read_label(svs)
+            data_utils.save_result(out_image_dict, label_img, svsbase, settings)
 
 
         except Exception as e:
@@ -166,11 +177,11 @@ def main(args):
                 data_utils.delete_from_ramdisk(svs_ramdisk)
             print e.__doc__
             print e.message
-
         finally:
             if settings['ramdisk']:
                 print 'Removing {}'.format(svs_ramdisk)
                 data_utils.delete_from_ramdisk(svs_ramdisk)
+            print
 
     print 'Closing session'
     sess.close()

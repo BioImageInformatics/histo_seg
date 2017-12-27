@@ -1,6 +1,6 @@
-'''
+"""
 process.py
-'''
+"""
 
 import cv2
 import numpy as np
@@ -73,9 +73,17 @@ def get_load_place_proc_size(scale, settings):
             mult = 4
             place_mult = 0.25
 
-        load_size = proc_size = settings['proc_size']
+        # load_size = proc_size = settings['proc_size']
+
+        load_size = settings['proc_size']
         load_size *= mult
+
+        proc_size = settings['proc_size']
         place_size = int(proc_size * place_mult)
+
+        print '\tLoading size {}'.format(load_size)
+        print '\tProcessing size {}'.format(proc_size)
+        print '\tPlacing size {}'.format(place_size)
 
         return load_size, place_size, proc_size
 
@@ -119,11 +127,12 @@ def process_svs(svs, prob_maps, coordinates, net, settings):
         failed_count = 0
 
         ## Leftover from debugging
-        # print 'Shuffling coordinates'
-        # random.shuffle(coords)
-        # indices = np.random.choice(range(len(coords)), 250)
-        # coords = [coords[index] for index in indices]
-        # print 'Subsetted {} coordinates '.format(len(coords))
+        if settings['DEBUGGING']:
+            print 'Shuffling coordinates'
+            random.shuffle(coords)
+            indices = np.random.choice(range(len(coords)), 1500)
+            coords = [coords[index] for index in indices]
+            print 'Subsetted {} tiles '.format(len(coords))
 
         ## Divide the set into n chunks
         if len(coords) < prefetch:
@@ -158,6 +167,7 @@ def process_svs(svs, prob_maps, coordinates, net, settings):
             cnn_start = time.time()
             tiles = [np.expand_dims(tile, 0) for tile in tiles]
             tiles = [tile*(2/255.0)-1 for tile in tiles] ## Recenter to [-1,1] for SELU activations
+            print 'tile approx. range: {:3.3f} - {:3.3f}'.format(tiles[0].min(), tiles[0].max()),
             tiles = [process_fn(tile) for tile in tiles]
             cnn_delta_t = time.time() - cnn_start
             print 'CNN finished in {:03.3f}s'.format(cnn_delta_t)

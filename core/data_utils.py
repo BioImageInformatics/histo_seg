@@ -1,10 +1,10 @@
-'''
+"""
 
 data_utils.py
 
 utility functions for read/write
 
-'''
+"""
 from openslide import OpenSlide
 import cv2
 import numpy as np
@@ -17,6 +17,14 @@ module_dir, module_name = os.path.split(__file__)
 sys.path.insert(0, module_dir)
 import colorNormalization as cnorm
 
+
+def move_slide(slide, srcdir='not_processed', destdir='processed'):
+    # slide_base = os.path.basename(slide)
+    dest_slide = slide.replace(srcdir, destdir)
+    print 'Moving {} to {}'.format(slide, dest_slide)
+    shutil.move(slide, dest_slide)
+
+
 def open_slide(slide):
     return OpenSlide(slide)
 #/end retrn_slide
@@ -27,13 +35,15 @@ def pull_svs_stats(svs, svs_info):
 
     # Find 20X level:
     if app_mag == '20':  # scanned @ 20X
+        print 'Working 20X slide'
         svs_info['app_mag'] = '20'
         svs_info['20x_lvl'] = 0
         svs_info['20x_dim'] = level_dims[0][::-1]
         svs_info['20x_downsample'] = svs.level_downsamples[0]
         svs_info['mult_5x'] = 1/16.
     elif app_mag == '40':  # scanned @ 40X
-        print 'WARNING CHECK 40X NUMBERS'
+        # print 'WARNING CHECK 40X NUMBERS'
+        print 'Working 40X slide'
         svs_info['app_mag'] = '40'
         svs_info['20x_lvl'] = 1
         svs_info['20x_dim'] = level_dims[1][::-1]
@@ -70,7 +80,7 @@ def read_region(svs, x, y, level, size, flip_channels=False, verbose=False):
     return img
 
 
-''' Load up a bunch of tiles as an ndarray '''
+""" Load up a bunch of tiles as an ndarray """
 def preload_tiles(svs, coords, level, size, as_ndarray=False, normalize=False):
     tiles = [read_region(svs, x, y, level, size= size)
              for (y,x) in coords]
@@ -88,7 +98,18 @@ def preload_tiles(svs, coords, level, size, as_ndarray=False, normalize=False):
     return tiles
 
 
-''' Just a helper '''
+""" Read a label image from svs file """
+def read_label(svs):
+    print 'Reading label image'
+    img = svs.associated_images['label']
+    img = np.asarray(img)
+    img = np.rot90(img, 3)
+    print 'Returning label image size {}'.format(img.shape)
+
+    return img
+
+
+""" Just a helper """
 def read_low_level(svs, verbose=False):
     if svs.level_count == 4 and svs.properties['aperio.AppMag'] == '20':
         low_index = svs.level_count - 2
@@ -101,7 +122,7 @@ def read_low_level(svs, verbose=False):
     return img
 
 
-''' copy file to ramdisk '''
+""" copy file to ramdisk """
 def transfer_to_ramdisk(filename, destination):
     newname = os.path.basename(filename)
     newname = os.path.join(destination, newname)
@@ -115,61 +136,82 @@ def transfer_to_ramdisk(filename, destination):
 
     return newname
 
-''' delete a file '''
+""" delete a file """
 def delete_from_ramdisk(filename):
     try:
         os.remove(filename)
     except:
         return 0
 
-'''
+"""
 Return the basename
-'''
+"""
 def svs_name(pathname):
     base = os.path.basename(pathname)
     a, ext = os.path.splitext(base)
     return a
 
 
-'''
+"""
 utility to save results
-'''
-def save_result(imgs, svsbase, settings):
+"""
+def save_result(imgs, label_img, svsbase, settings):
     output_dir = settings['output_dir']
     output_filenames = settings['output_filenames']
     n_classes = settings['n_classes']
 
-    assert len(imgs) == len(output_filenames)
+    # assert len(imgs) == len(output_filenames)
 
-    for img, filename in zip(imgs, output_filenames):
-        if 'argmax' in filename:
-            filename_ = os.path.join(output_dir, svsbase+'_'+filename+'.png')
-            print 'Saving {}'.format(filename_)
-            cv2.imwrite(filename_, img)
-        elif filename == 'probability':
-            ## Uncomment to save full-res 3D stack
-            # print 'Writing probability npy {}'.format(img.shape)
-            # filename_ = os.path.join(output_dir, svsbase+'_'+filename+'.npy')
-            # np.save(filename_, img)
-            print 'Writing probability jpg {}'.format(img.shape)
-            filename_ = os.path.join(output_dir, svsbase+'_'+filename+'.jpg')
-            cv2.imwrite(filename_, img*255/img.max())
-        elif filename == 'tissue':
-            ext = '.png'
-            mult = 255
-            filename_ = os.path.join(output_dir, svsbase+'_'+filename+ext)
-            print 'Saving {}'.format(filename_)
-            cv2.imwrite(filename_, img*mult)
-        elif filename == 'overlay':
-            ext = '.jpg'
-            filename_ = os.path.join(output_dir, svsbase+'_'+filename+ext)
-            print 'Saving {}'.format(filename_)
-            cv2.imwrite(filename_, img)
-        elif filename == 'variance':
-            ext = '.jpg'
-            filename_ = os.path.join(output_dir, svsbase+'_'+filename+ext)
-            print 'Saving {}'.format(filename_)
-            cv2.imwrite(filename_, img)
-        else:
-            print 'Filename {} does not match a mode. Edit in settings'
+    # 'output_filenames': ['probability',
+    #                      'argmax',
+    #                      'argmaxRGB',
+    #                      'overlayMAX',
+    #                      'overlaySMTH',
+    #                      'argmaxSMTH',
+    #                      'tissue'],
+    ## Save the label image
+
+    filename_ = os.path.join(output_dir, svsbase+'_label.jpg')
+    print 'Saving {}'.format(filename_)
+    cv2.imwrite(filename_, label_img)
+
+    for filename in output_filenames:
+        try:
+            img = imgs[filename]
+            if 'argmax' in filename:
+                filename_ = os.path.join(output_dir, svsbase+'_'+filename+'.png')
+                print 'Saving {}'.format(filename_)
+                cv2.imwrite(filename_, img)
+            elif filename == 'probability':
+                ## Uncomment to save full-res 3D stack
+                # print 'Writing probability npy {}'.format(img.shape)
+                # filename_ = os.path.join(output_dir, svsbase+'_'+filename+'.npy')
+                # np.save(filename_, img)
+                print 'Writing probability jpg {}'.format(img.shape)
+                filename_ = os.path.join(output_dir, svsbase+'_'+filename+'.jpg')
+                cv2.imwrite(filename_, img*255/img.max())
+            elif filename == 'tissue':
+                ext = '.png'
+                mult = 255
+                filename_ = os.path.join(output_dir, svsbase+'_'+filename+ext)
+                print 'Saving {}'.format(filename_)
+                cv2.imwrite(filename_, img*mult)
+            elif 'overlay' in filename:
+                ext = '.jpg'
+                filename_ = os.path.join(output_dir, svsbase+'_'+filename+ext)
+                print 'Saving {}'.format(filename_)
+                cv2.imwrite(filename_, img)
+            elif filename == 'variance':
+                ext = '.jpg'
+                filename_ = os.path.join(output_dir, svsbase+'_'+filename+ext)
+                print 'Saving {}'.format(filename_)
+                cv2.imwrite(filename_, img)
+            else:
+                print 'Filename {} does not match a mode. Edit in settings'
+                continue
+
+        except Exception as e:
+            print e.message
+            print e.__doc__
+            print 'Error in save_result'
             continue

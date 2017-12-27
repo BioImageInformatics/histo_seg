@@ -1,6 +1,6 @@
-'''
+"""
 process.py
-'''
+"""
 
 import cv2
 import numpy as np
@@ -31,10 +31,10 @@ def init_net(netproto, weights, caffe_root, gpumode=True):
     return caffe.Net(netproto, weights, caffe.TEST)
 #/end init_net
 
-'''
+"""
 Assumes batchsize=1
 need to take care of 3-channel and 1-channel
-'''
+"""
 def img_to_caffe(img):
     if len(img.shape) == 3:
         _,_,d = img.shape
@@ -51,19 +51,19 @@ def img_to_caffe(img):
     return img
 #/end img_to_caffe
 
-'''
+"""
 For batchsize > 1
 Also need to take care of 3-channel and 1-channel
 
 What we need is the output to be: (h, w, n_class)
-'''
+"""
 def imgs_to_caffe_batch(imgs):
     pass
 #/end imgs_to_caffe_batch
 
 
 
-''' This function instead of np.rollaxis or similar '''
+""" This function instead of np.rollaxis or similar """
 def activations_to_hwd(ndarr):
     nd = ndarr.shape[0]
     ndarr = np.split(ndarr, nd, 0) ## split along axis 0

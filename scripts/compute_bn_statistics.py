@@ -211,7 +211,7 @@ def run(out_dir, train_model, weights, out_name, out_proto):
     test_net.save(os.path.join(args.out_dir, args.out_name))
     print "done"
 
-'''
+"""
 Usage:
 
 python compute_bn_statistics.py --train_model=/path/code/model.prototxt \
@@ -220,7 +220,7 @@ python compute_bn_statistics.py --train_model=/path/code/model.prototxt \
 --weights=/path/weights/model_iterXXX.caffemodel \
 --out_proto=deploy.prototxt
 
-'''
+"""
 if __name__ == '__main__':
     p = make_parser()
     args = p.parse_args()

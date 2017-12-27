@@ -1,10 +1,10 @@
 #!/usr/bin/python
 
-'''
+"""
 
 Perform validation given a list of tests and list of ground truths
 
-'''
+"""
 
 import os
 import glob
@@ -20,7 +20,7 @@ from sklearn.metrics import (jaccard_similarity_score, accuracy_score,
                              cohen_kappa_score, precision_score,
                              matthews_corrcoef)
 
-'''
+"""
 Functions & Variables:
     gt_list, test_list = list_matching(gt_dir, test_dir, test_ext)
     gt, test = load_images(gt, test)
@@ -33,7 +33,7 @@ Functions & Variables:
 
 Intended usage is to edit these dictionaries to change behavior downstream
 
-'''
+"""
 code_class = {
     0:'LG',
     1:'HG',
@@ -43,7 +43,7 @@ code_class = {
 }
 
 
-''' Utility functions '''
+""" Utility functions """
 
 # Define two special tests:
 def epithelium(mask):
@@ -128,12 +128,12 @@ metrics_list = {
     'PCaJaccard':     lambda gt,test: jaccard_similarity_score(cancer(gt),cancer(test)),
     # 'PCaprecision':          lambda gt,test: precision_score(canc(gt),canc(test))
 }
-'''
+"""
 # //**************************** START ******************************//
 
 Functions for listing / loading files
 
-'''
+"""
 def list_matching(gt_dir, test_dir, test_ext, shuffle=True):
     gt_list = sorted(glob.glob(os.path.join(gt_dir, '*.png')))
 
@@ -205,9 +205,9 @@ def load_images(gt_pth, test_pth, verbose=False):
 
     return gt_img, test_img
 
-'''
+"""
 Run tests
-'''
+"""
 def eval_mask_pair(gt_img, test_img, verbose=True):
     metrics = {key:0.0 for key in sorted(metrics_list.iterkeys())}
 
@@ -238,7 +238,7 @@ def eval_mask_pair(gt_img, test_img, verbose=True):
     return metrics
 #/end eval_mask_pair
 
-''' Help to print a summary '''
+""" Help to print a summary """
 def metric_list2dict(metrics):
     # Translate the list of metrics to a dict
     overall_metrics = {key:0 for key in sorted(metrics_list.iterkeys())}
@@ -386,13 +386,13 @@ def main(gt_dir, test_dir, reportfile=None, subset=None, mode='all'):
     #/end if
 #/end main
 
-'''
+"""
 Finds the agreement metrics for similarly named label images from 2 folders
 
 Usage:
 $ python validate.py [Ground Truth Dir] [Test Image Dir] [Report file path]
 $ python validate.py /path/masks /path/masks2 /path/report.txt
-'''
+"""
 if __name__ == '__main__':
     # reportfile = None
     # subset is float or None
