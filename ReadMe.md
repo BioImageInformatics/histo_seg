@@ -1,18 +1,16 @@
-## Histo-Seg-2
-Histo-Seg is a skeleton for rapid prototyping of image analysis methods applied to digital pathology whole slide images. It uses the [openslide](http://openslide.org) library to read from `svs` image pyramids. Really it's a set of functions strung together with a couple "pipeline" scripts. Development is mostly to facilitate certain projects. Histo-Seg-2 (this repo) is a considerably simplified version of v1. These functions provide the same core operations, much quicker, and in ~1/2 or fewer lines of code.
+## Histo-Seg
+Histo-Seg is a skeleton for rapid prototyping of image analysis methods applied to digital pathology whole slide images. It uses the [openslide](http://openslide.org) library to read from `svs` image pyramids. Really it's a set of functions strung together with a couple "pipeline" scripts. Development is mostly to facilitate our projects, while certain quality of life improvements are made along the way.
 
-
-**November, 2017** Moved over to Tensorflow via `tfmodels` (LINK).
-
+For plug-and-play use, train models with the [tfmodels](https://github.com/BioImageInformatics/tfmodels) package.
 
 ![flow_overview]
 
 
 ### Example Use Cases
-1. prostate cancer growth patterns, from manual annotation
-2. clear cell renal cancer microenvironment, automatic transfer of Immunohistochemistry annotation
-3. WSI Image-to-Image translation for H\&E to IHC or IF (in-progress)
-4. WSI feature distributions for hot-spot finding
+1. prostate cancer growth patterns, from manual annotation (paper)
+2. clear cell renal cancer microenvironment, automatic transfer of Immunohistochemistry annotation (WIP)
+3. WSI Image-to-Image translation for H\&E to IHC or IF (WIP)
+4. WSI feature distributions for hot-spot finding (WIP)
 
 
 ## Workflow
@@ -25,9 +23,6 @@ A partial list of package dependecies:
 * matplotlib
 * OpenCV 2
 * TensorFlow >= 1.4
-
-### Training
-Training procedure moved to `tfmodels` (LINK).
 
 #### Processing
 Processing happens in 3 phases:
@@ -46,9 +41,6 @@ The example script uses a RAM drive available by default on Ubuntu OS at `/dev/s
 An alternative is to mount a RAMDISK to a path of your choosing using `tmpfs`.
 Then again, reading from an SSD or fast HDD could be fast enough, in which case set `ramdisk` to `None`.
 
-
-### Features visualization & WSI feature heat maps
-IN PLANNING
 
 ### License
 Please provide citation if you use this library for your research.
